@@ -1,0 +1,185 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Admin</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #e8f1fc;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 700px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 20px 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: relative;
+    }
+    h1 {
+        text-align: center;
+        color: #0b3d91;
+        margin: 0;
+    }
+    .back-icon {
+        position: absolute;
+        top: 20px;
+        left: 30px;
+        font-size: 24px;
+        text-decoration: none;
+        color: #0b3d91;
+    }
+    .search-bar {
+        display: flex;
+        margin-bottom: 20px;
+    }
+    .search-bar input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #0b3d91;
+        border-radius: 4px 0 0 4px;
+    }
+    .search-bar select {
+        padding: 8px;
+        border: 1px solid #0b3d91;
+        border-left: none;
+        border-radius: 0 4px 4px 0;
+        background: #fff;
+        cursor: pointer;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background: #f0f6ff;
+    }
+    button {
+        padding: 5px 10px;
+        margin-right: 5px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .delete {
+        background: #b80600;
+        color: #fff;
+    }
+    .change-pass {
+        background: #397439;
+        color: #fff;
+    }
+    .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+    }
+
+    </style>
+    </head>
+    <body>
+
+    <div class="container">
+    <a href="../pages/admin.html" class="back-icon">&#8592;</a>
+    <h1>Gestión de Usuarios</h1>
+    
+    <div class="search-bar">
+    <label for="searchInput" class="sr-only">Buscar usuarios por correo</label>
+    <input type="text" id="searchInput" placeholder="Buscar por correo...">
+
+    <label for="sortSelect" class="sr-only">Ordenar usuarios</label>
+    <select id="sortSelect">
+        <option value="asc">Ascendente</option>
+        <option value="desc">Descendente</option>
+    </select>
+    </div>
+
+
+    
+    <table id="usersTable">
+        <thead>
+        <tr>
+            <th>Correo</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr><td>adm@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>ana@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>beatriz@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>carlos@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>diana@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>eduardo@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>felipe@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>gloria@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>hector@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        <tr><td>isabel@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
+        </tbody>
+    </table>
+    </div>
+
+    <script>
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const usersTable = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
+
+    function filterAndSort() {
+    const filter = searchInput.value.toLowerCase();
+    const rows = Array.from(usersTable.getElementsByTagName('tr'));
+
+    // Filtrar: solo aquellos que empiezan con la cadena ingresada
+    rows.forEach(row => {
+        const email = row.cells[0].textContent.toLowerCase();
+        row.style.display = email.startsWith(filter) ? '' : 'none';
+    });
+
+    // Ordenar
+    const visibleRows = rows.filter(row => row.style.display !== 'none');
+    visibleRows.sort((a, b) => {
+        const emailA = a.cells[0].textContent.toLowerCase();
+        const emailB = b.cells[0].textContent.toLowerCase();
+        return sortSelect.value === 'asc' ? emailA.localeCompare(emailB) : emailB.localeCompare(emailA);
+    });
+
+    // Reordenar en el DOM
+    visibleRows.forEach(row => usersTable.appendChild(row));
+    }
+
+    // Eventos
+    searchInput.addEventListener('input', filterAndSort);
+    sortSelect.addEventListener('change', filterAndSort);
+
+    // Funciones de botones
+    usersTable.addEventListener('click', function(e){
+    if(e.target.classList.contains('delete')){
+        if(confirm('¿Deseas eliminar este usuario?')){
+        e.target.closest('tr').remove();
+        }
+    }
+    if(e.target.classList.contains('change-pass')){
+        const newPass = prompt('Ingrese nueva contraseña:');
+        if(newPass){
+        alert('Contraseña cambiada a: ' + newPass);
+        }
+    }
+    });
+    </script>
+
+    </body>
+    </html>

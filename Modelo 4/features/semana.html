@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen semanal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background: #F4F7FB; color: #111827; }
+    .card { background: #fff; border-radius: 18px; border: 1px solid #E5E7EB; box-shadow: 0 8px 28px rgba(18, 38, 63, 0.05); padding: 20px; }
+    .stat-card { display: flex; flex-direction: column; gap: 4px; }
+    .stat-label { font-size: 13px; color: #6B7280; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .pill-day { padding: 6px 10px; border-radius: 12px; background: #EEF1F6; color: #4B5563; font-weight: 600; font-size: 13px; }
+    .bar-grid { position: relative; height: 240px; background: linear-gradient(to top, #e5e7eb 1px, transparent 1px); background-size: 100% 60px; border-radius: 14px; padding: 12px 16px 20px; }
+    .bar { width: 36px; border-radius: 10px 10px 8px 8px; background: #c3d7f8; transition: height 0.2s ease; }
+    .bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .bar-label { font-size: 12px; color: #6B7280; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+    <header class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-4">
+        <button class="h-10 w-10 flex items-center justify-center rounded-full bg-white shadow border border-gray-200 hover:bg-gray-100 transition" aria-label="Volver al dashboard" id="btnBack">
+          <i class="fa-solid fa-arrow-left text-gray-700"></i>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold">Resumen semanal</h1>
+          <p class="text-gray-500 text-sm">&Uacute;ltimos 7 d&iacute;as</p>
+        </div>
+      </div>
+      <button class="h-10 px-4 rounded-lg bg-white border border-gray-200 shadow text-sm font-semibold flex items-center gap-2 hover:bg-gray-50">
+        <i class="fa-solid fa-download text-gray-600"></i>
+        Exportar
+      </button>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+      <div class="card stat-card">
+        <div class="flex items-center justify-between">
+          <span class="stat-label">Total semanal</span>
+          <i class="fa-solid fa-arrow-trend-up text-green-600"></i>
+        </div>
+        <div class="stat-value" id="totalHours">0.0h</div>
+        <span class="text-sm text-gray-500">Esta semana</span>
+      </div>
+      <div class="card stat-card">
+        <span class="stat-label">Promedio diario</span>
+        <div class="stat-value" id="avgHours">0.0h</div>
+        <span class="text-sm text-gray-500">Por d&iacute;a</span>
+      </div>
+      <div class="card stat-card">
+        <span class="stat-label">D&iacute;as trabajados</span>
+        <div class="stat-value" id="daysWorked">0</div>
+        <span class="text-sm text-gray-500">De 7 d&iacute;as</span>
+      </div>
+    </div>
+
+    <div class="card mb-5">
+      <div class="mb-3">
+        <h3 class="text-lg font-semibold">Horas por d&iacute;a</h3>
+        <p class="text-sm text-gray-500">Distribuci&oacute;n de horas trabajadas en la semana</p>
+      </div>
+      <div class="bar-grid">
+        <div class="absolute left-3 top-3 text-xs text-gray-500" style="writing-mode: vertical-rl; transform: rotate(180deg);">Horas</div>
+        <div id="barContainer" class="h-full flex items-end justify-around pl-6 pr-2"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="text-lg font-semibold mb-3">Detalle diario</h3>
+      <div id="dailyList" class="divide-y divide-gray-100"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'resumen-semanal-data';
+
+    function pad(n) { return n.toString().padStart(2, '0'); }
+
+    function startOfWeek(date = new Date()) {
+      const d = new Date(date);
+      const day = d.getDay(); // 0 = sunday
+      const diff = day === 0 ? -6 : 1 - day; // monday start
+      d.setDate(d.getDate() + diff);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function toKey(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function buildWeek(start) {
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        days.push({ date: d.toISOString(), hours: 0 });
+      }
+      return days;
+    }
+
+    function loadWeekData(weekStart) {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.weekStart === toKey(weekStart) && Array.isArray(parsed.days) && parsed.days.length === 7) {
+            return parsed.days;
+          }
+        }
+      } catch (e) {
+        console.warn('No se pudo leer el resumen semanal', e);
+      }
+      return buildWeek(weekStart);
+    }
+
+    function saveWeekData(weekStart, days) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ weekStart: toKey(weekStart), days }));
+      } catch (e) {
+        console.warn('No se pudo guardar el resumen semanal', e);
+      }
+    }
+
+    let today = new Date();
+    let weekStart = startOfWeek(today);
+    let weekDays = loadWeekData(weekStart);
+
+    function formatHours(val) {
+      return `${val.toFixed(1)}h`;
+    }
+
+    function formatDayLabel(dateIso) {
+      const d = new Date(dateIso);
+      const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+      const day = d.getDate();
+      const month = d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+      const capWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+      return { weekday: capWeekday, dateText: `${day} ${month}` };
+    }
+
+    function updateStats() {
+      const total = weekDays.reduce((sum, d) => sum + (Number(d.hours) || 0), 0);
+      const worked = weekDays.filter(d => (Number(d.hours) || 0) > 0).length;
+      const avg = total / 7;
+      document.getElementById('totalHours').textContent = formatHours(total);
+      document.getElementById('avgHours').textContent = formatHours(avg);
+      document.getElementById('daysWorked').textContent = worked;
+    }
+
+    function renderBars() {
+      const container = document.getElementById('barContainer');
+      container.innerHTML = '';
+      const max = Math.max(1, ...weekDays.map(d => Number(d.hours) || 0));
+      weekDays.forEach(day => {
+        const hours = Number(day.hours) || 0;
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${(hours / max) * 100}%`;
+        const labelWrap = document.createElement('div');
+        labelWrap.className = 'bar-wrap';
+        const label = document.createElement('span');
+        label.className = 'bar-label';
+        label.textContent = formatDayLabel(day.date).weekday;
+        labelWrap.appendChild(bar);
+        labelWrap.appendChild(label);
+        container.appendChild(labelWrap);
+      });
+    }
+
+    function renderDailyList() {
+      const list = document.getElementById('dailyList');
+      list.innerHTML = '';
+      weekDays.forEach(day => {
+        const { weekday, dateText } = formatDayLabel(day.date);
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between py-3';
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="pill-day">${weekday}</span>
+            <span class="text-sm text-gray-600">${dateText}</span>
+          </div>
+          <span class="text-sm font-semibold text-gray-800">${formatHours(Number(day.hours) || 0)}</span>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderAll() {
+      updateStats();
+      renderBars();
+      renderDailyList();
+    }
+
+    function scheduleReset() {
+      const now = new Date();
+      const currentStart = startOfWeek(now);
+      const nextMonday = new Date(currentStart);
+      nextMonday.setDate(currentStart.getDate() + 7);
+      const msUntil = nextMonday - now;
+      setTimeout(() => {
+        today = new Date();
+        weekStart = startOfWeek(today);
+        weekDays = buildWeek(weekStart);
+        saveWeekData(weekStart, weekDays);
+        renderAll();
+        scheduleReset();
+      }, Math.max(1000, msUntil));
+    }
+
+    // API publica para inyectar datos reales desde backend
+    window.actualizarHorasSemana = function (hoursByDate = {}) {
+      weekDays = weekDays.map(day => {
+        const key = toKey(new Date(day.date));
+        const updated = hoursByDate[key];
+        return { ...day, hours: typeof updated === 'number' ? updated : day.hours };
+      });
+      saveWeekData(weekStart, weekDays);
+      renderAll();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+      saveWeekData(weekStart, weekDays);
+      scheduleReset();
+    });
+
+    const backBtn = document.getElementById("btnBack");
+
+  backBtn.addEventListener("click", () => {
+    const role = localStorage.getItem("userRole") || "user";
+    let target = "../pages/usuario.html";
+
+    if (role === "admin")  target = "../pages/admin.html";
+    if (role === "rrhh")   target = "../pages/rrhh.html";
+
+    window.location.href = target;
+});
+
+
+  </script>
+</body>
+</html>

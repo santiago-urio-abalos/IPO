@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Consultar fichajes</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        header {
+            background: #003366;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            font-size: 22px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #cccccc;
+        }
+
+        /* BUSCADOR */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.search-box input {
+    width: 400px; /* ancho fijo o máximo deseado */
+    max-width: 90%; /* responsive */
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+
+        .search-box button {
+            background: #003366;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* OPCIONES */
+        .mode-box {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .mode-box label {
+            font-weight: bold;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        /* CALENDARIOS */
+        .calendar-container {
+            display: none;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .calendar-container.active {
+            display: flex;
+        }
+
+        .calendar-container div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-container input {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        /* TABLA */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        table th {
+            background: #003366;
+            color: white;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #4f4f4f;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <header role="heading" aria-level="1" style="position: relative;">
+    <a href="../pages/rrhh.html" style="
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 24px;
+        color: white;
+        text-decoration: none;
+    " aria-label="Volver al panel de control">&#8592;</a>
+    CONSULTAR DATOS DE FICHAJE
+</header>
+
+<div class="container">
+
+    <!-- BUSCADOR -->
+    <div class="search-box">
+    <label for="correo" style="display:flex; align-items:center; font-weight:bold; margin-right:10px;">
+        Correo del empleado:
+    </label>
+    <input type="email" id="correo" placeholder="Introduce el correo del empleado..." aria-label="Correo del empleado">
+    <button onclick="consultar()" aria-label="Consultar fichajes del empleado">Consultar</button>
+</div>
+
+
+    <!-- MODO 1 DÍA / 2 DÍAS -->
+    <fieldset class="mode-box">
+        <legend>Selecciona tipo de consulta</legend>
+
+        <label for="mode1">
+            <input type="radio" id="mode1" name="mode" value="1" checked onclick="cambiarModo()"> 
+            Consultar 1 día
+        </label>
+
+        <label for="mode2">
+            <input type="radio" id="mode2" name="mode" value="2" onclick="cambiarModo()"> 
+            Consultar varios días
+        </label>
+    </fieldset>
+
+    <!-- CALENDARIO MODO 1 DÍA -->
+    <div id="cal1" class="calendar-container active">
+        <div>
+            <label for="dia_unico">Día:</label>
+            <input type="date" id="dia_unico">
+        </div>
+    </div>
+
+    <!-- CALENDARIO MODO 2 DÍAS -->
+    <div id="cal2" class="calendar-container">
+        <div>
+            <label for="dia1">Desde:</label>
+            <input type="date" id="dia1">
+        </div>
+
+        <div>
+            <label for="dia2">Hasta:</label>
+            <input type="date" id="dia2">
+        </div>
+    </div>
+
+    <!-- TABLA -->
+    <table id="tablaFichajes" style="display:none;" aria-label="Tabla de fichajes del empleado seleccionado">
+        <thead>
+            <tr>
+                <th scope="col">Día</th>
+                <th scope="col">Hora de Entrada</th>
+                <th scope="col">Hora de Salida</th>
+                <th scope="col">Pausas</th>
+                <th scope="col">Total Horas</th>
+            </tr>
+        </thead>
+        <tbody id="tablaBody"></tbody>
+    </table>
+
+    <p id="noData" class="no-data">Introduce un correo y selecciona la fecha o fechas.</p>
+
+</div>
+
+<script>
+    /* DATOS FICTICIOS */
+    const datosFake = {
+        "empleado@click.com": {
+            "2025-11-01": { entrada: "08:00", salida: "16:00", pausas: "00:30" },
+            "2025-11-02": { entrada: "09:00", salida: "17:20", pausas: "00:20" },
+            "2025-11-03": { entrada: "08:30", salida: "16:30", pausas: "00:45" },
+            "2025-11-04": { entrada: "07:50", salida: "15:50", pausas: "00:25" },
+            "2025-11-05": { entrada: "09:10", salida: "17:15", pausas: "00:30" },
+            "2025-11-06": { entrada: "08:15", salida: "16:10", pausas: "00:20" },
+            "2025-11-07": { entrada: "08:45", salida: "16:45", pausas: "00:35" },
+            "2025-11-08": { entrada: "09:00", salida: "17:00", pausas: "00:30" },
+            "2025-11-09": { entrada: "08:05", salida: "16:05", pausas: "00:25" },
+            "2025-11-10": { entrada: "08:30", salida: "16:30", pausas: "00:40" }
+        }
+    };
+
+    function cambiarModo() {
+        const modo = document.querySelector('input[name="mode"]:checked').value;
+
+        document.getElementById("cal1").classList.remove("active");
+        document.getElementById("cal2").classList.remove("active");
+
+        if (modo === "1") {
+            document.getElementById("cal1").classList.add("active");
+        } else {
+            document.getElementById("cal2").classList.add("active");
+        }
+    }
+
+    function consultar() {
+        const correo = document.getElementById("correo").value.trim();
+        const modo = document.querySelector('input[name="mode"]:checked').value;
+
+        if (!correo) {
+            alert("Introduce un correo válido.");
+            return;
+        }
+
+        const empleado = datosFake[correo];
+
+        if (!empleado) {
+            mostrarMensaje("No se encontraron datos para ese correo.");
+            return;
+        }
+
+        const tablaBody = document.getElementById("tablaBody");
+        tablaBody.innerHTML = "";
+
+        if (modo === "1") consultarUnDia(empleado);
+        else consultarDosDias(empleado);
+    }
+
+    function consultarUnDia(empleado) {
+        const dia = document.getElementById("dia_unico").value;
+
+        if (!dia) {
+            alert("Selecciona un día.");
+            return;
+        }
+
+        agregarFila(empleado, dia);
+    }
+
+    function consultarDosDias(empleado) {
+    const d1 = document.getElementById("dia1").value;
+    const d2 = document.getElementById("dia2").value;
+
+    if (!d1 || !d2) {
+        alert("Selecciona ambos días.");
+        return;
+    }
+
+    if (d1 > d2) {
+        alert("La fecha inicial no puede ser mayor que la final.");
+        return;
+    }
+
+    listarRangoFechas(empleado, d1, d2);
+}
+
+/* NUEVA FUNCIÓN: RECORRE TODAS LAS FECHAS DEL RANGO */
+function listarRangoFechas(empleado, fechaInicio, fechaFin) {
+    const tablaBody = document.getElementById("tablaBody");
+    tablaBody.innerHTML = "";
+
+    let actual = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+
+    while (actual <= fin) {
+        const dia = actual.toISOString().split("T")[0]; // YYYY-MM-DD
+        agregarFila(empleado, dia);
+
+        // avanzar un día
+        actual.setDate(actual.getDate() + 1);
+    }
+
+    document.getElementById("tablaFichajes").style.display = "table";
+    document.getElementById("noData").style.display = "none";
+}
+
+
+    function agregarFila(empleado, dia) {
+        const tablaBody = document.getElementById("tablaBody");
+
+        if (empleado[dia]) {
+            const r = empleado[dia];
+            const totalHoras = calcularHoras(r.entrada, r.salida, r.pausas);
+
+            tablaBody.innerHTML += `
+                <tr>
+                    <td>${dia}</td>
+                    <td>${r.entrada}</td>
+                    <td>${r.salida}</td>
+                    <td>${r.pausas}</td>
+                    <td>${totalHoras}</td>
+                </tr>`;
+        } else {
+            tablaBody.innerHTML += `
+                <tr>
+                    <td>${dia}</td>
+                    <td colspan="4">No hay fichaje este día</td>
+                </tr>`;
+        }
+
+        document.getElementById("tablaFichajes").style.display = "table";
+        document.getElementById("noData").style.display = "none";
+    }
+
+    function calcularHoras(entrada, salida, pausas) {
+        const [h1, m1] = entrada.split(":").map(Number);
+        const [h2, m2] = salida.split(":").map(Number);
+        const [hp, mp] = pausas.split(":").map(Number);
+
+        const total = (h2 * 60 + m2) - (h1 * 60 + m1) - (hp * 60 + mp);
+        const th = Math.floor(total / 60);
+        const tm = total % 60;
+
+        return `${String(th).padStart(2,'0')}:${String(tm).padStart(2,'0')}`;
+    }
+
+    function mostrarMensaje(msg) {
+        document.getElementById("noData").innerText = msg;
+        document.getElementById("noData").style.display = "block";
+        document.getElementById("tablaFichajes").style.display = "none";
+    }
+</script>
+
+</body>
+</html>

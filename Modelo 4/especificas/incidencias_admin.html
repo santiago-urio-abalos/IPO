@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Incidencias - Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #e8f1fc; }
+    h1 { margin-bottom: 20px; color: #0b3d91; }
+
+    .filters { margin-bottom: 20px; }
+    .filters label { color: #0b3d91; font-weight: bold; }
+    .filters select { padding: 6px; border: 1px solid #0b3d91; border-radius: 4px; }
+
+    table { width: 100%; border-collapse: collapse; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    th, td { padding: 10px; border-bottom: 1px solid #c7d7ec; text-align: left; }
+    th { background: #0b3d91; color: #ffffff; }
+
+    tr:nth-child(even) { background: #f0f6ff; }
+  </style>
+</head>
+<body>
+  <a href="../pages/admin.html" style="font-size:24px; text-decoration:none; color:#0b3d91; position:absolute; top:20px; left:20px;">&#8592;</a>
+  <h1>Incidencias</h1>
+
+  <div class="filters">
+    <label for="filter">Filtrar por:</label>
+    <select id="filter">
+      <option value="dia">Hoy</option>
+      <option value="semana">Esta semana</option>
+      <option value="mes">Este mes</option>
+      <option value="historico">Histórico</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Correo</th>
+        <th>Tipo</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Comentario</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>abc@click.com</td>
+        <td>Olvido de fichaje</td>
+        <td>17/11/25</td>
+        <td>
+          <select>
+            <option>Pendiente</option>
+            <option>Aceptado</option>
+            <option>Rechazado</option>
+          </select>
+        </td>
+        <td>Comentario de ejemplo.</td>
+      </tr>
+      <tr>
+        <td>xyz@click.com</td>
+        <td>Error de fichaje</td>
+        <td>17/11/25</td>
+        <td>
+          <select>
+            <option>Aceptado</option>
+            <option>Pendiente</option>
+            <option>Rechazado</option>
+          </select>
+        </td>
+        <td>Revisar marcaje.</td>
+      </tr>
+      <tr>
+        <td>lmn@click.com</td>
+        <td>Error de fichaje</td>
+        <td>15/11/25</td>
+        <td>
+          <select>
+            <option>Rechazado</option>
+            <option>Pendiente</option>
+            <option>Aceptado</option>
+          </select>
+        </td>
+        <td>No coincide con hora real.</td>
+      </tr>
+      <tr>
+        <td>qwe@click.com</td>
+        <td>Olvido de fichaje</td>
+        <td>10/11/25</td>
+        <td>
+          <select>
+            <option>Pendiente</option>
+            <option>Aceptado</option>
+            <option>Rechazado</option>
+          </select>
+        </td>
+        <td>Se validó correctamente.</td>
+      </tr>
+      <tr>
+        <td>ruf@click.com</td>
+        <td>Error de fichaje</td>
+        <td>09/11/25</td>
+        <td>
+          <select>
+            <option>Pendiente</option>
+            <option>Aceptado</option>
+            <option>Rechazado</option>
+          </select>
+        </td>
+        <td>Marcaje duplicado.</td>
+      </tr>
+      <tr>
+        <td>kad@click.com</td>
+        <td>Olvido de fichaje</td>
+        <td>01/11/25</td>
+        <td>
+          <select>
+            <option>Pendiente</option>
+            <option>Aceptado</option>
+            <option>Rechazado</option>
+          </select>
+        </td>
+        <td>Inconsistencia con registro previo.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    // PARSEO SEGURO DE FECHAS dd/mm/yy O dd/mm/yyyy
+    function parseDate(str) {
+      const parts = str.split('/');
+      let day = parseInt(parts[0]);
+      let month = parseInt(parts[1]) - 1;
+      let year = parseInt(parts[2]);
+
+      if (year < 100) year = 2000 + year;
+
+      const d = new Date(year, month, day);
+      d.setHours(0,0,0,0);
+      return d;
+    }
+
+    const filterSelect = document.getElementById('filter');
+    const rows = document.querySelectorAll('tbody tr');
+
+    filterSelect.addEventListener('change', () => {
+      const now = new Date();
+      now.setHours(0,0,0,0);
+
+      const filter = filterSelect.value;
+
+      rows.forEach(row => {
+        const dateText = row.children[2].textContent.trim();
+        const date = parseDate(dateText);
+
+        if (isNaN(date.getTime())) {
+          row.style.display = 'none';
+          return;
+        }
+
+        const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+        let show = false;
+
+        switch (filter) {
+          case 'dia':
+            show = (diffDays === 0);
+            break;
+          case 'semana':
+            show = (diffDays >= 0 && diffDays <= 7);
+            break;
+          case 'mes':
+            show = (diffDays >= 0 && diffDays <= 30);
+            break;
+          case 'historico':
+            show = true;
+            break;
+        }
+
+        row.style.display = show ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

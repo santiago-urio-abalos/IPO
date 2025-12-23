@@ -1,0 +1,382 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #F4F7FB;
+      color: #111827;
+    }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 8px 28px rgba(18, 38, 63, 0.05);
+      padding: 20px;
+    }
+    .day-btn {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      position: relative;
+      font-weight: 600;
+      color: #111827;
+      transition: all 0.1s ease;
+    }
+    .day-btn:hover { background: #eef2f7; }
+    .day-selected { background: #0c0f1c; color: #fff; }
+    .day-today-muted { box-shadow: 0 0 0 2px rgba(0,0,0,0.2); border-radius: 12px; }
+    .dot-label { padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+    .badge { border-radius: 10px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+    .legend-item { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #E5E7EB; background: #fff; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+    <header class="flex items-center gap-4 mb-4">
+    <button 
+      class="h-10 w-10 flex items-center justify-center rounded-full bg-white shadow border border-gray-200 hover:bg-gray-100 transition" 
+      aria-label="Volver al dashboard" 
+      id="btnBack"
+      onclick="window.location.href='../pages/usuario.html'">
+            
+      <i class="fa-solid fa-arrow-left text-gray-700"></i>
+    </button>
+
+      <div>
+        <h1 class="text-2xl font-bold">Calendario</h1>
+        <p class="text-gray-500 text-sm">Vista mensual de turnos y eventos</p>
+      </div>
+    </header>
+
+    <div class="card mb-5 flex flex-wrap gap-3 items-center">
+      <span class="legend-item"><span class="w-4 h-4 rounded bg-[#c3f3d7] border border-[#9fe9c0]"></span><span>Vacaciones</span></span>
+      <span class="legend-item"><span class="w-4 h-4 rounded bg-[#f9d3d3] border border-[#f3b5b5]"></span><span>Festivo</span></span>
+      <span class="legend-item"><span class="w-4 h-4 rounded bg-[#e2d8ff] border border-[#cdbefc]"></span><span>Turno noche</span></span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+      <div class="card lg:col-span-2">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <button id="prevMonth" class="h-9 w-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-100"><i class="fa-solid fa-chevron-left"></i></button>
+            <button id="nextMonth" class="h-9 w-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-100"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <div class="text-lg font-semibold" id="monthLabel">Mes</div>
+        </div>
+        <div class="grid grid-cols-7 text-center text-sm text-gray-500 mb-2">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div id="calendarGrid" class="grid grid-cols-7 gap-y-1 text-center"></div>
+      </div>
+
+      <div class="card">
+        <h3 id="selectedLabel" class="text-lg font-semibold mb-1">D&iacute;a</h3>
+        <p id="selectedWeekday" class="text-sm text-gray-500 mb-4">-</p>
+        <div id="eventList" class="space-y-2 text-sm text-gray-600">No hay eventos para este d&iacute;a</div>
+        <button id="addEventBtn" class="mt-4 w-full bg-black text-white py-2 rounded-lg text-sm font-semibold hover:opacity-90">Agregar evento</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="text-lg font-semibold">Pr&oacute;ximos eventos</h3>
+      <p class="text-sm text-gray-500 mb-3">Eventos programados</p>
+      <div id="upcomingList" class="space-y-2 text-sm text-gray-600">No hay eventos pr&oacute;ximos</div>
+    </div>
+  </div>
+
+  <script>
+    const COLORS = {
+      vacaciones: '#c3f3d7',
+      festivo: '#f9d3d3',
+      noche: '#e2d8ff',
+      personal: '#dbeafe'
+    };
+
+    const STORAGE_KEY = 'cal-events-local';
+
+    const today = new Date();
+    let currentYear = today.getFullYear();
+    let currentMonth = today.getMonth(); // 0-index
+    let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    function pad(n) { return n.toString().padStart(2, '0'); }
+    function toDateKey(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+    function weekdayLabel(d) {
+      return d.toLocaleDateString('es-ES', { weekday: 'long' });
+    }
+    function longLabel(d) {
+      return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function getMadridHolidays(year) {
+      const dates = [
+        `${year}-01-01`, `${year}-01-06`, `${year}-05-01`, `${year}-05-02`, `${year}-08-15`, `${year}-10-12`, `${year}-11-01`, `${year}-11-09`, `${year}-12-06`, `${year}-12-08`, `${year}-12-25`
+      ];
+      return new Set(dates);
+    }
+
+    function seededRandom(seed) {
+      let x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function generatePseudoEvents(year, month) {
+      const events = {};
+      const holidays = getMadridHolidays(year);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // Festivos
+      holidays.forEach(dateStr => {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        if (y === year && m - 1 === month) {
+          events[dateStr] = events[dateStr] || [];
+          events[dateStr].push({ label: 'Festivo', type: 'festivo' });
+        }
+      });
+
+      // Vacaciones pseudoaleatorias (3 dias)
+      for (let i = 0; i < 3; i++) {
+        const rnd = seededRandom(year * 100 + month * 10 + i);
+        const day = Math.max(1, Math.min(daysInMonth, Math.floor(rnd * daysInMonth) + 1));
+        const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`;
+        if (holidays.has(dateKey)) continue;
+        events[dateKey] = events[dateKey] || [];
+        events[dateKey].push({ label: 'Vacaciones', type: 'vacaciones' });
+      }
+
+      // Turno de noche pseudoaleatorio (3 dias)
+      for (let i = 0; i < 3; i++) {
+        const rnd = seededRandom(year * 200 + month * 15 + i * 3);
+        const day = Math.max(1, Math.min(daysInMonth, Math.floor(rnd * daysInMonth) + 1));
+        const dateKey = `${year}-${pad(month + 1)}-${pad(day)}`;
+        events[dateKey] = events[dateKey] || [];
+        events[dateKey].push({ label: 'Turno noche', type: 'noche' });
+      }
+
+      return events;
+    }
+
+    function loadUserEvents() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.warn('No se pudieron leer eventos locales', e);
+        return {};
+      }
+    }
+
+    function saveUserEvents(data) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.warn('No se pudieron guardar eventos locales', e);
+      }
+    }
+
+    let userEvents = loadUserEvents();
+
+    function combineEvents(dateKey) {
+      const base = generatePseudoEvents(currentYear, currentMonth);
+      const merged = [...(base[dateKey] || []), ...(userEvents[dateKey] || [])];
+      return merged;
+    }
+
+    function nextDaysEvents(limit = 5) {
+      const results = [];
+      const lookAheadMonths = 2;
+      let year = currentYear;
+      let month = currentMonth;
+
+      for (let m = 0; m <= lookAheadMonths; m++) {
+        const pseudo = generatePseudoEvents(year, month);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dk = `${year}-${pad(month + 1)}-${pad(d)}`;
+          const dateObj = new Date(year, month, d);
+          if (dateObj < today) continue;
+          const list = [...(pseudo[dk] || []), ...(userEvents[dk] || [])];
+          list.forEach(ev => results.push({ date: dk, label: ev.label, type: ev.type, dateObj }));
+        }
+        month++;
+        if (month > 11) { month = 0; year++; }
+      }
+
+      results.sort((a, b) => a.dateObj - b.dateObj);
+      return results.slice(0, limit);
+    }
+
+    function renderUpcoming() {
+      const container = document.getElementById('upcomingList');
+      const items = nextDaysEvents();
+      if (!items.length) {
+        container.textContent = 'No hay eventos pr&oacute;ximos';
+        return;
+      }
+      container.innerHTML = '';
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-3';
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.style.background = COLORS[item.type] || '#e5e7eb';
+        badge.textContent = item.label;
+        const txt = document.createElement('span');
+        txt.textContent = `${longLabel(item.dateObj)} (${item.dateObj.toLocaleDateString('es-ES', { weekday: 'long' })})`;
+        div.appendChild(badge);
+        div.appendChild(txt);
+        container.appendChild(div);
+      });
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      document.getElementById('monthLabel').textContent = new Date(currentYear, currentMonth).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+
+      const firstDay = new Date(currentYear, currentMonth, 1);
+      const startWeekday = firstDay.getDay(); // 0=Sunday
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      // Leading blanks
+      for (let i = 0; i < startWeekday; i++) {
+        const span = document.createElement('span');
+        span.className = 'h-10';
+        grid.appendChild(span);
+      }
+
+      const pseudo = generatePseudoEvents(currentYear, currentMonth);
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const btn = document.createElement('button');
+        btn.className = 'day-btn mx-auto';
+        btn.textContent = day;
+        const dateObj = new Date(currentYear, currentMonth, day);
+        const dateKey = toDateKey(dateObj);
+
+        const isToday = dateObj.toDateString() === today.toDateString();
+        const isSelected = dateObj.toDateString() === selectedDate.toDateString();
+
+        if (isSelected) {
+          btn.classList.add('day-selected');
+        } else if (isToday) {
+          btn.classList.add('day-today-muted');
+        }
+
+        const marks = [...(pseudo[dateKey] || []), ...(userEvents[dateKey] || [])];
+        if (marks.length) {
+          const pill = document.createElement('div');
+          pill.className = 'absolute -bottom-1 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full';
+          pill.style.background = COLORS[marks[0].type] || '#e5e7eb';
+          btn.appendChild(pill);
+        }
+
+        btn.onclick = () => {
+          selectedDate = dateObj;
+          renderCalendar();
+          renderDayDetail();
+        };
+
+        grid.appendChild(btn);
+      }
+    }
+
+    function renderDayDetail() {
+      const label = document.getElementById('selectedLabel');
+      label.textContent = selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.getElementById('selectedWeekday').textContent = selectedDate.toLocaleDateString('es-ES', { weekday: 'long' });
+
+      const list = document.getElementById('eventList');
+      const key = toDateKey(selectedDate);
+      const pseudo = generatePseudoEvents(currentYear, currentMonth);
+      const events = [...(pseudo[key] || []), ...(userEvents[key] || [])];
+
+      if (!events.length) {
+        list.textContent = 'No hay eventos para este d&iacute;a';
+        return;
+      }
+
+      list.innerHTML = '';
+      events.forEach(ev => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-3';
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.style.background = COLORS[ev.type] || '#e5e7eb';
+        badge.textContent = ev.label;
+        const text = document.createElement('span');
+        text.textContent = ev.label;
+        row.appendChild(badge);
+        row.appendChild(text);
+        list.appendChild(row);
+      });
+    }
+
+    function addEvent() {
+      const title = prompt('Titulo del evento');
+      if (!title) return;
+      const key = toDateKey(selectedDate);
+      userEvents[key] = userEvents[key] || [];
+      userEvents[key].push({ label: title, type: 'personal' });
+      saveUserEvents(userEvents);
+      renderDayDetail();
+      renderCalendar();
+      renderUpcoming();
+    }
+
+    document.getElementById('addEventBtn').addEventListener('click', addEvent);
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      selectedDate = new Date(currentYear, currentMonth, Math.min(selectedDate.getDate(), new Date(currentYear, currentMonth + 1, 0).getDate()));
+      renderCalendar();
+      renderDayDetail();
+      renderUpcoming();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      selectedDate = new Date(currentYear, currentMonth, Math.min(selectedDate.getDate(), new Date(currentYear, currentMonth + 1, 0).getDate()));
+      renderCalendar();
+      renderDayDetail();
+      renderUpcoming();
+    });
+
+    function init() {
+      renderCalendar();
+      renderDayDetail();
+      renderUpcoming();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    const backBtn = document.getElementById("btnBack");
+
+backBtn.addEventListener("click", () => {
+    const role = localStorage.getItem("userRole") || "user";
+    let target = "../pages/usuario.html";
+
+    if (role === "admin")  target = "../pages/admin.html";
+    if (role === "rrhh")   target = "../pages/rrhh.html";
+
+    window.location.href = target;
+});
+
+
+  </script>
+</body>
+</html>

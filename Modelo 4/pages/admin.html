@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard Admin</title>
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#F4F7FB] min-h-screen">
+
+    <!-- Header -->
+    <div class="p-6 flex justify-between items-center relative">
+        <h1 class="text-2xl font-bold">Hola, Admin</h1>
+
+        <button class="icon-btn" onclick="window.location.href='../features/settings.html'">
+            <img src="https://cdn-icons-png.flaticon.com/512/1144/1144760.png"
+                 class="w-10 h-10 rounded-full" alt="Icono de perfil">
+        </button>
+    </div>
+
+    <!-- Hora -->
+    <div class="mx-6 p-10 bg-blue-600 rounded-2xl text-white text-center shadow">
+        <h2 class="font-bold text-lg">Hora actual</h2>
+        <p id="time" class="text-4xl font-bold mt-2"></p>
+        <p id="date" class="mt-2"></p>
+    </div>
+
+    <!-- TARJETAS DEL DASHBOARD -->
+    <div class="mx-6 mt-6 grid grid-cols-1 gap-4">
+
+        <!-- 1. INCIDENCIAS -->
+        <div class="bg-white p-6 rounded-2xl shadow flex items-center gap-4 cursor-pointer 
+                    hover:shadow-lg transition"
+             onclick="window.location.href='../especificas/incidencias_admin.html'">
+            <div class="text-red-600 text-3xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-lg">Incidencias</h3>
+                <p class="text-gray-500 text-sm">Ver incidencias de empleados</p>
+            </div>
+        </div>
+
+        <!-- 2. CREAR USUARIO -->
+        <div class="bg-white p-6 rounded-2xl shadow flex items-center gap-4 cursor-pointer 
+                    hover:shadow-lg transition"
+             onclick="window.location.href='../especificas/Crear_usuarios_admin.html'">
+            <div class="text-green-600 text-3xl">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-lg">Crear usuario</h3>
+                <p class="text-gray-500 text-sm">Registrar un nuevo empleado</p>
+            </div>
+        </div>
+
+        <!-- 3. GESTIÓN DE USUARIOS -->
+        <div class="bg-white p-6 rounded-2xl shadow flex items-center gap-4 cursor-pointer 
+                    hover:shadow-lg transition"
+             onclick="window.location.href='../especificas/Gestion_usuarios_admin.html'">
+            <div class="text-blue-700 text-3xl">
+                <i class="fa-solid fa-users-gear"></i>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-lg">Gestión de usuarios</h3>
+                <p class="text-gray-500 text-sm">Editar, borrar o administrar usuarios</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RELOJ -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById("time").textContent = now.toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+            document.getElementById("date").textContent =
+                now.toLocaleDateString("es-ES", { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+
+    <script type="module" src="../especificas/funciones_admin.js"></script>
+
+</body>
+</html>

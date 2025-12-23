@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Fichaje</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f0f2f6;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-card {
+            background: #ffffff;
+            width: 420px;
+            padding: 45px 50px;
+            border-radius: 22px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+            text-align: center;
+        }
+
+        .icon-circle {
+            width: 78px;
+            height: 78px;
+            margin: 0 auto 25px;
+            background: linear-gradient(135deg, #1d6bff, #0050e6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0, 89, 255, 0.25);
+        }
+
+        .icon-circle i {
+            color: white;
+            font-size: 30px;
+        }
+
+        .login-card h2 {
+            margin: 5px 0;
+            font-size: 22px;
+            color: #1a1a1a;
+        }
+
+        .login-card p.subtitle {
+            margin-top: 3px;
+            margin-bottom: 25px;
+            color: #6d6d6d;
+            font-size: 14px;
+        }
+
+        .field-label {
+            text-align: left;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* Campo de entrada */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        /* Input */
+        .input-group input {
+            pointer-events: auto; /* el input sí que recibe clics */
+            width: 100%;
+            padding: 13px 45px 13px 42px; /* ← espacio a los dos iconos */
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #f8f9fc;
+            outline: none;
+            transition: 0.2s;
+            box-sizing: border-box;
+        }
+        /* Icono izquierdo */
+        .input-group .left-icon {
+            position: absolute;
+            top: 13px;
+            left: 14px;
+            font-size: 15px;
+            color: #7b7b7b;
+        }
+        
+
+                /* Icono ojo */
+        /* Icono ojo */
+        .toggle-pass {
+        position: absolute;
+        right: 14px;          /* 👈 icono totalmente a la derecha */
+        top: 50%;
+        transform: translateY(-50%); 
+        font-size: 18px;
+        color: #7b7b7b;
+        cursor: pointer;
+
+        /* para que NO bloquee el input */
+        pointer-events: auto;
+        z-index: 10;
+
+        /* hacer clic solamente en el icono */
+        width: 20px;
+        height: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        .btn-login {
+            width: 100%;
+            background: #000;
+            color: white;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            opacity: 0.85;
+        }
+
+        .forgot {
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .forgot a {
+            color: #1769ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .error {
+            margin-top: 10px;
+            color: #e84c4c;
+            font-size: 14px;
+            display: none;
+        }
+        /* Estilos validación */
+        input.valid { border-color: #45b649 !important; }
+        input.invalid { border-color: #e74c3c !important; }
+
+        .error-msg {
+            color: red;
+            font-size: 13px;
+            margin-top: -12px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+
+        <div class="icon-circle">
+            <i class="fa-solid fa-clock"></i>
+        </div>
+
+        <h2>Sistema de Fichaje</h2>
+        <p class="subtitle">Inicia sesión para registrar tu jornada laboral</p>
+
+        <div class="field-label">Correo electrónico</div>
+        <div class="input-group">
+            <i class="fas fa-envelope left-icon"></i>
+            <input type="email" id="email" placeholder="usuario@empresa.com">
+        </div>
+        <p id="emailError" class="error-msg"></p>
+
+        <div class="field-label">Contraseña</div>
+        <div class="input-group">
+            <i class="fa-solid fa-lock left-icon"></i>
+            <input type="password" id="password" placeholder="Ingresa tu contraseña">
+            <i class="fa-solid fa-eye toggle-pass" id="togglePass"></i>
+        </div>
+
+
+        <button class="btn-login" onclick="login()">Iniciar sesión</button>
+
+        <p class="forgot">¿Olvidaste tu contraseña? <a href="#">Recuperar</a></p>
+        <p class="error" id="errorMessage">Credenciales incorrectas</p>
+
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // ⚠️ RELLENA ESTO CON TU CONFIG DE FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyAvCdYCrUbv37mulXHDtYvRhTTNXDyNiFc",
+        authDomain: "click-df584.firebaseapp.com",
+        projectId: "click-df584",
+        storageBucket: "click-df584.firebasestorage.app",
+        messagingSenderId: "410988732262",
+        appId: "1:410988732262:web:0531fd4ed3bdc01fa2f2a7",
+        measurementId: "G-2VZB7X7HCR"
+    };
+
+    // ================== INICIALIZACIÓN ==================
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ====== VALIDACIÓN EMAIL (reutilizamos lo que ya tenías) ======
+    const emailInput = document.getElementById("email");
+    const emailError = document.getElementById("emailError");
+    const errorBox   = document.getElementById("errorMessage");
+
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    emailInput.addEventListener("input", () => {
+        const email = emailInput.value;
+
+        if (email.length === 0) {
+            emailInput.classList.remove("valid", "invalid");
+            emailError.textContent = "";
+            return;
+        }
+
+        if (!regexEmail.test(email)) {
+            emailInput.classList.add("invalid");
+            emailInput.classList.remove("valid");
+            emailError.textContent = "Introduce un correo electrónico válido.";
+        } else {
+            emailInput.classList.add("valid");
+            emailInput.classList.remove("invalid");
+            emailError.textContent = "";
+        }
+    });
+
+    // ====== OJO MOSTRAR / OCULTAR CONTRASEÑA ======
+    const pass   = document.getElementById("password");
+    const toggle = document.getElementById("togglePass");
+
+    toggle.addEventListener("click", () => {
+        if (pass.type === "password") {
+            pass.type = "text";
+            toggle.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            pass.type = "password";
+            toggle.classList.replace("fa-eye-slash", "fa-eye");
+        }
+    });
+
+    // ====== LOGIN USANDO FIREBASE ======
+    window.login = async function login() {
+        const email    = emailInput.value.trim();
+        const password = pass.value.trim();
+
+        if (!regexEmail.test(email)) {
+            errorBox.textContent = "Introduce un correo electrónico válido.";
+            errorBox.style.display = "block";
+            return;
+        }
+
+        if (!email || !password) {
+            errorBox.textContent = "Completa todos los campos.";
+            errorBox.style.display = "block";
+            return;
+        }
+
+        try {
+            // 1) Autenticación en Firebase
+            const cred = await signInWithEmailAndPassword(auth, email, password);
+            const uid = cred.user.uid;
+
+            // 2) Leer perfil en Firestore (colección users / doc = uid)
+            const userDocRef = doc(db, "users", uid);
+            const userSnap   = await getDoc(userDocRef);
+
+            if (!userSnap.exists()) {
+                errorBox.textContent = "Tu usuario no tiene perfil en la base de datos.";
+                errorBox.style.display = "block";
+                return;
+            }
+
+            const userData = userSnap.data();
+            const role     = userData.role || "user";
+            // Guarda el rol para navegación entre pantallas
+            localStorage.setItem("userRole", role);
+
+
+            // 3) Redirección según rol
+            if (role === "admin") {
+                window.location.href = "admin.html";
+            } else if (role === "rrhh") {
+                window.location.href = "rrhh.html";
+            } else {
+                window.location.href = "usuario.html";
+            }
+
+        } catch (err) {
+            console.error(err);
+            // Mensaje genérico de error
+            errorBox.textContent = "Credenciales incorrectas o usuario no autorizado.";
+            errorBox.style.display = "block";
+        }
+    };
+</script>
+
+
+
+
+</body>
+</html>

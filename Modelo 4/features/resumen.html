@@ -1,0 +1,363 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen del d&iacute;a</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #F4F7FB;
+      color: #111827;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 8px 28px rgba(18, 38, 63, 0.05);
+      padding: 20px;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 6px;
+    }
+
+    .timeline-row {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding-bottom: 18px;
+    }
+
+    .timeline-row:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 42px;
+      width: 2px;
+      height: calc(100% - 10px);
+      background: #E4E7EE;
+    }
+
+    .timeline-row:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: relative;
+      z-index: 1;
+      width: 38px;
+      height: 38px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      font-size: 18px;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 14px;
+      background: #EEF1F6;
+      color: #4B5563;
+      border: 1px solid #E2E6EE;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    .progress-shell {
+      background: #e6ebf2;
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #cbd5e1, #c5d4ec);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .subtle {
+      color: #6B7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <header class="flex items-center gap-4 mb-6">
+      <button class="h-10 w-10 flex items-center justify-center rounded-full bg-white shadow border border-gray-200 hover:bg-gray-100 transition" aria-label="Volver al dashboard" id="btnBack">
+        <i class="fa-solid fa-arrow-left text-gray-700"></i>
+      </button>
+      <div>
+        <h1 class="text-2xl font-bold">Resumen del d&iacute;a</h1>
+        <p id="dateLabel" class="text-gray-500 text-sm capitalize">jueves, 20 de noviembre</p>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+      <div class="card flex items-center gap-4">
+        <div class="stat-icon bg-[#E8F1FF] text-[#1D4ED8]">
+          <i class="fa-regular fa-clock"></i>
+        </div>
+        <div>
+          <p class="subtle">Horas totales</p>
+          <p id="totalHours" class="text-3xl font-bold leading-tight">0h 0m</p>
+        </div>
+      </div>
+
+      <div class="card flex items-center gap-4">
+        <div class="stat-icon bg-[#FFE7D6] text-[#F97316]">
+          <i class="fa-solid fa-mug-saucer"></i>
+        </div>
+        <div>
+          <p class="subtle">Pausas</p>
+          <p id="pauseCount" class="text-3xl font-bold leading-tight">0</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-5">
+      <div class="flex flex-col gap-1 mb-4">
+        <h3 class="text-lg font-semibold">L&iacute;nea de tiempo</h3>
+        <p class="text-sm text-gray-500">Registro de fichajes del d&iacute;a</p>
+      </div>
+      <div id="timeline" class="timeline space-y-4"></div>
+    </div>
+
+    <div class="card">
+      <h3 class="text-lg font-semibold">Progreso de jornada</h3>
+      <p class="text-sm text-gray-500">Objetivo: <span id="goalLabel">8 horas</span></p>
+      <div class="mt-4">
+        <div class="progress-shell">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <div class="flex justify-between text-sm text-gray-500 mt-2">
+          <span id="elapsedLabel">0h 0m</span>
+          <span id="goalShort">8h</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const goalHours = 8;
+    const storageKey = 'resumen-dia-events';
+    const today = new Date();
+
+    function buildTodayTime(hours, minutes, seconds) {
+      return new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, seconds).toISOString();
+    }
+
+    const defaultEvents = [
+      { type: 'entrada', time: buildTodayTime(19, 14, 24) },
+      { type: 'pausa', time: buildTodayTime(19, 14, 26) },
+      { type: 'finPausa', time: buildTodayTime(19, 14, 31) },
+      { type: 'salida', time: buildTodayTime(19, 14, 36) }
+    ];
+
+    const typeConfig = {
+      entrada: { label: 'Entrada', color: '#16A34A', icon: 'fa-regular fa-clock' },
+      pausa: { label: 'Pausa', color: '#F97316', icon: 'fa-solid fa-mug-saucer' },
+      finPausa: { label: 'Fin De Pausa', color: '#2563EB', icon: 'fa-solid fa-play' },
+      salida: { label: 'Salida', color: '#DC2626', icon: 'fa-solid fa-arrow-right-from-bracket' }
+    };
+
+    let events = loadEvents();
+
+    function loadEvents() {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar eventos guardados', error);
+      }
+      return defaultEvents;
+    }
+
+    function persistEvents() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(events));
+      } catch (error) {
+        console.warn('No se pudieron guardar los eventos', error);
+      }
+    }
+
+    function formatDateLabel() {
+      const dateEl = document.getElementById('dateLabel');
+      const formatted = new Date().toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+      });
+      dateEl.textContent = formatted;
+    }
+
+    function formatClock(value) {
+      return new Intl.DateTimeFormat('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(new Date(value));
+    }
+
+    function formatDuration(ms) {
+      const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${hours}h ${minutes}m`;
+    }
+
+    function calculateTotals() {
+      const sorted = [...events].sort((a, b) => new Date(a.time) - new Date(b.time));
+      const startEvent = sorted.find(ev => ev.type === 'entrada');
+      if (!startEvent) {
+        return { totalMs: 0, pauseCount: 0, running: false };
+      }
+
+      const endEvent = [...sorted].reverse().find(ev => ev.type === 'salida');
+      const endTime = endEvent ? new Date(endEvent.time) : new Date();
+      const startTime = new Date(startEvent.time);
+
+      let pauseMs = 0;
+      let pauseStart = null;
+
+      for (const ev of sorted) {
+        const time = new Date(ev.time);
+        if (ev.type === 'pausa') {
+          pauseStart = time;
+        }
+        if (ev.type === 'finPausa' && pauseStart) {
+          pauseMs += time - pauseStart;
+          pauseStart = null;
+        }
+      }
+
+      if (pauseStart) {
+        pauseMs += Date.now() - pauseStart.getTime();
+      }
+
+      let totalMs = endTime - startTime - pauseMs;
+      totalMs = Math.max(0, totalMs);
+
+      return {
+        totalMs,
+        pauseCount: sorted.filter(ev => ev.type === 'pausa').length,
+        running: !endEvent
+      };
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById('timeline');
+      container.innerHTML = '';
+
+      const sorted = [...events].sort((a, b) => new Date(a.time) - new Date(b.time));
+
+      sorted.forEach(ev => {
+        const cfg = typeConfig[ev.type] || typeConfig.entrada;
+        const row = document.createElement('div');
+        row.className = 'timeline-row';
+
+        const icon = document.createElement('div');
+        icon.className = 'timeline-dot';
+        icon.style.backgroundColor = cfg.color;
+        icon.innerHTML = `<i class="${cfg.icon}"></i>`;
+        row.appendChild(icon);
+
+        const info = document.createElement('div');
+        info.className = 'flex flex-col gap-0.5';
+        info.innerHTML = `
+          <span class="font-medium">${cfg.label}</span>
+          <span class="text-sm text-gray-500">${formatClock(ev.time)}</span>
+        `;
+        row.appendChild(info);
+
+        const pill = document.createElement('span');
+        pill.className = 'pill';
+        pill.textContent = cfg.label;
+        row.appendChild(pill);
+
+        container.appendChild(row);
+      });
+    }
+
+    function updateStats() {
+      const { totalMs, pauseCount } = calculateTotals();
+
+      document.getElementById('pauseCount').textContent = pauseCount;
+      document.getElementById('totalHours').textContent = formatDuration(totalMs);
+      document.getElementById('elapsedLabel').textContent = formatDuration(totalMs);
+
+      const progressPercent = Math.min(100, (totalMs / (goalHours * 3600 * 1000)) * 100);
+      document.getElementById('progressFill').style.width = `${progressPercent}%`;
+    }
+
+    function bootstrap() {
+      formatDateLabel();
+      renderTimeline();
+      updateStats();
+      setInterval(updateStats, 1000);
+      document.getElementById('goalLabel').textContent = `${goalHours} horas`;
+      document.getElementById('goalShort').textContent = `${goalHours}h`;
+    }
+
+    window.registrarEvento = function (type, date = new Date()) {
+      events.push({ type, time: date instanceof Date ? date.toISOString() : date });
+      persistEvents();
+      renderTimeline();
+      updateStats();
+    };
+
+    window.reemplazarEventos = function (nuevosEventos = []) {
+      events = nuevosEventos;
+      persistEvents();
+      renderTimeline();
+      updateStats();
+    };
+
+    document.addEventListener('DOMContentLoaded', bootstrap);
+
+    const backBtn = document.getElementById("btnBack");
+
+backBtn.addEventListener("click", () => {
+    const role = localStorage.getItem("userRole") || "user";
+    let target = "../pages/usuario.html";
+
+    if (role === "admin")  target = "../pages/admin.html";
+    if (role === "rrhh")   target = "../pages/rrhh.html";
+
+    window.location.href = target;
+});
+
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" />
+
+    <meta charset="UTF-8" />
+    <title>Usuario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* Estilo del deslizador */
+        .slider-track {
+            position: relative;
+            height: 54px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            overflow: hidden;
+            cursor: grab;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            height: 44px;
+            width: 44px;
+            border-radius: 9999px;
+            background: #1f0f0f;
+            top: 5px;
+            left: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            transition: left 0.1s linear;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+        }
+
+        .slider-track.disabled {
+            opacity: 0.45;
+            cursor: not-allowed !important;
+        }
+
+        /* TOPBAR */
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .icon-img {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body class="bg-[#F4F7FB] min-h-screen">
+
+    <!-- Header -->
+    <div class="p-6 flex justify-between items-center relative">
+        <h1 class="text-2xl font-bold">Hola, Usuario</h1>
+
+        <button class="icon-btn" onclick="window.location.href='../features/settings.html'">
+            <img src="https://cdn-icons-png.flaticon.com/512/1144/1144760.png" class="icon-img" alt="Icono de perfil">
+        </button>
+    </div>
+
+    <!-- Hora -->
+    <div class="mx-6 p-10 bg-blue-600 rounded-2xl text-white text-center shadow">
+        <h2 class="font-bold text-lg">Hora actual</h2>
+        <p id="time" class="text-4xl font-bold mt-2"></p>
+        <p id="date" class="mt-2"></p>
+    </div>
+
+    <!-- BARRA 1: Jornada -->
+    <div class="mx-6 mt-6">
+        <div id="sliderJornada" class="slider-track text-white shadow" style="background-color:#15803D;">
+            <div id="thumbJornada" class="slider-thumb">➜</div>
+
+            <span id="labelJornada" class="mx-auto font-medium">
+                Desliza para iniciar jornada
+            </span>
+        </div>
+    </div>
+
+    <!-- BARRA 2: Pausa -->
+    <div class="mx-6 mt-4">
+        <div id="sliderPausa" class="slider-track text-white shadow disabled" style="background-color:#C2410C;">
+            <div id="thumbPausa" class="slider-thumb">➜</div>
+
+            <span id="labelPausa" class="mx-auto font-medium">
+                Desliza para iniciar pausa
+            </span>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+        <div class="bg-white w-80 p-6 rounded-xl shadow text-center">
+            <p id="modalMessage" class="text-lg font-semibold mb-4">¿Confirmar acción?</p>
+            <div class="flex gap-4 justify-center">
+                <button id="btnNo" class="px-4 py-2 bg-gray-300 rounded-lg">No</button>
+                <button id="btnSi" class="px-4 py-2 bg-green-600 text-white rounded-lg">Sí</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TARJETAS DEL DASHBOARD -->
+    <div class="mx-6 mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div class="bg-white p-6 rounded-2xl shadow flex items-center gap-4 cursor-pointer hover:shadow-lg transition"
+            onclick="window.location.href='../features/resumen.html'">
+            <div class="text-blue-600 text-3xl">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Resumen del día</h3>
+                <p class="text-gray-500 text-sm">Ver jornada completa</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow flex items-center gap-4 cursor-pointer hover:shadow-lg transition"
+            onclick="window.location.href='../features/semana.html'">
+            <div class="text-green-600 text-3xl">
+                <i class="fa-solid fa-calendar-week"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Semana</h3>
+                <p class="text-gray-500 text-sm">Gráfico semanal</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow flex items-center gap-4 cursor-pointer hover:shadow-lg transition"
+            onclick="window.location.href='../features/calendario.html'">
+            <div class="text-purple-600 text-3xl">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Calendario</h3>
+                <p class="text-gray-500 text-sm">Vista mensual</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow flex items-center gap-4 cursor-pointer hover:shadow-lg transition"
+            onclick="window.location.href='../features/incidencias.html'">
+            <div class="text-red-600 text-3xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Incidencias</h3>
+                <p class="text-gray-500 text-sm">Crear o revisar</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* RELOJ */
+        function updateClock() {
+            const now = new Date();
+            document.getElementById("time").textContent = now.toLocaleTimeString("es-ES", {
+                hour: "2-digit", minute: "2-digit"
+            });
+            document.getElementById("date").textContent =
+                now.toLocaleDateString("es-ES", { weekday: 'long', day: 'numeric', month: 'long' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        /* ESTADOS */
+        let jornadaIniciada = false;
+        let pausaIniciada = false;
+        let activeSlider = null;
+
+        const sliders = {
+            jornada: {
+                track: document.getElementById("sliderJornada"),
+                thumb: document.getElementById("thumbJornada"),
+                label: document.getElementById("labelJornada"),
+            },
+            pausa: {
+                track: document.getElementById("sliderPausa"),
+                thumb: document.getElementById("thumbPausa"),
+                label: document.getElementById("labelPausa"),
+            }
+        };
+
+        /* DESLIZADORES */
+        function setupSlider(key) {
+            const s = sliders[key];
+            let dragging = false;
+            let startX = 0;
+
+            s.track.addEventListener("mousedown", (e) => {
+                if (s.track.classList.contains("disabled")) return;
+                dragging = true;
+                startX = e.clientX;
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (!dragging) return;
+
+                let delta = e.clientX - startX;
+                let max = s.track.offsetWidth - 54;
+
+                delta = Math.max(0, Math.min(delta, max));
+                s.thumb.style.left = delta + "px";
+            });
+
+            document.addEventListener("mouseup", () => {
+                if (!dragging) return;
+                dragging = false;
+
+                let max = s.track.offsetWidth - 54;
+
+                if (parseInt(s.thumb.style.left) >= max - 5) {
+                    activeSlider = key;
+                    openConfirm(key);
+                }
+
+                s.thumb.style.left = "5px";
+            });
+        }
+
+        setupSlider("jornada");
+        setupSlider("pausa");
+
+        /* MODAL */
+        const modal = document.getElementById("confirmModal");
+        const modalMessage = document.getElementById("modalMessage");
+        const btnSi = document.getElementById("btnSi");
+        const btnNo = document.getElementById("btnNo");
+
+        function openConfirm(key) {
+            modalMessage.textContent =
+                key === "jornada"
+                    ? (jornadaIniciada ? "¿Desea terminar la jornada?" : "¿Desea iniciar la jornada?")
+                    : (pausaIniciada ? "¿Desea terminar la pausa?" : "¿Desea iniciar la pausa?");
+            modal.classList.remove("hidden");
+        }
+
+        btnNo.onclick = () => {
+            modal.classList.add("hidden");
+            activeSlider = null;
+        };
+
+        btnSi.onclick = () => {
+
+            if (activeSlider === "jornada") {
+                jornadaIniciada = !jornadaIniciada;
+
+                if (jornadaIniciada) {
+                    sliders.jornada.label.textContent = "Desliza para finalizar jornada";
+                    sliders.jornada.track.style.backgroundColor = "#B91C1C"; // rojo accesible
+                    sliders.pausa.track.classList.remove("disabled");
+                } else {
+                    sliders.jornada.label.textContent = "Desliza para iniciar jornada";
+                    sliders.jornada.track.style.backgroundColor = "#15803D"; // verde accesible
+                    sliders.pausa.track.classList.add("disabled");
+                }
+            }
+
+            if (activeSlider === "pausa") {
+                pausaIniciada = !pausaIniciada;
+
+                if (pausaIniciada) {
+                    sliders.pausa.label.textContent = "Desliza para terminar pausa";
+                    sliders.pausa.track.style.backgroundColor = "#1D4ED8"; // azul accesible
+                    sliders.jornada.track.classList.add("disabled");
+                } else {
+                    sliders.pausa.label.textContent = "Desliza para iniciar pausa";
+                    sliders.pausa.track.style.backgroundColor = "#C2410C"; // naranja accesible
+                    sliders.jornada.track.classList.remove("disabled");
+                }
+            }
+
+            modal.classList.add("hidden");
+            activeSlider = null;
+        };
+    </script>
+
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAvCdYCrUbv37mulXHDtYvRhTTNXDyNiFc",
+        authDomain: "click-df584.firebaseapp.com",
+        projectId: "click-df584",
+        storageBucket: "click-df584.firebasestorage.app",
+        messagingSenderId: "410988732262",
+        appId: "1:410988732262:web:0531fd4ed3bdc01fa2f2a7",
+        measurementId: "G-2VZB7X7HCR"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Si no hay usuario logueado, mandamos al login
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = "index.html";
+        }
+    });
+</script>
+
+
+</body>
+</html>

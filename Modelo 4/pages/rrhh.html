@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Recursos Humanos</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="bg-teal-700 text-white p-6 shadow flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold">Dashboard de Recursos Humanos</h1>
+            <p class="text-sm opacity-90">Control y seguimiento de fichajes</p>
+        </div>
+
+        <!-- ICONO PERFIL -->
+        <button
+            onclick="window.location.href='../features/settings.html'"
+            aria-label="Abrir configuración de usuario"
+            title="Configuración"
+            class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow hover:scale-105 transition">
+
+            <i class="fa-solid fa-user text-teal-700" aria-hidden="true"></i>
+        </button>
+
+    </header>
+
+    <!-- KPIs -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6">
+
+        <div class="bg-white rounded-xl p-5 shadow">
+            <p class="text-gray-500">Registros</p>
+            <h2 class="text-3xl font-bold" id="totalRegistros">0</h2>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 shadow">
+            <p class="text-gray-500">Fichados</p>
+            <h2 class="text-3xl font-bold text-green-600" id="fichados">0</h2>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 shadow">
+            <p class="text-gray-500">No fichados</p>
+            <h2 class="text-3xl font-bold text-red-600" id="noFichados">0</h2>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 shadow">
+            <p class="text-gray-500">Empleados únicos</p>
+            <h2 class="text-3xl font-bold" id="empleadosUnicos">0</h2>
+        </div>
+
+    </section>
+
+    <!-- FILTROS -->
+    <section class="bg-white mx-6 rounded-xl shadow p-6 mb-6">
+        <h2 class="text-xl font-bold mb-4">Filtros</h2>
+
+        <div class="flex flex-wrap gap-4">
+        <label for="filtroNombre" class="sr-only">Filtrar por empleado</label>
+        <input id="filtroNombre" type="text" placeholder="Empleado"
+            class="border px-3 py-2 rounded-lg text-sm">
+
+        <label for="fechaInicio" class="sr-only">Fecha inicio</label>
+        <input id="fechaInicio" type="date"
+            class="border px-3 py-2 rounded-lg text-sm">
+
+        <label for="fechaFin" class="sr-only">Fecha fin</label>
+        <input id="fechaFin" type="date"
+            class="border px-3 py-2 rounded-lg text-sm">
+
+        </div>
+    </section>
+
+    <!-- TABLA -->
+    <section class="bg-white mx-6 rounded-xl shadow p-6">
+
+        <h2 class="text-xl font-bold mb-4">Resultados</h2>
+
+        <table class="w-full text-sm">
+            <thead class="text-left bg-gray-100">
+                <tr>
+                    <th class="p-3">Nombre</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tablaResultados"></tbody>
+        </table>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+
+        <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="font-bold mb-4">Fichajes (Barras)</h3>
+            <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="font-bold mb-4">Fichajes (Tarta)</h3>
+            <div class="relative h-64 md:h-72 lg:h-80">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+    </section>
+
+    <script>
+        /* ===== DATOS SIMULADOS ===== */
+        const registros = [
+            { nombre: "Carlos Martínez", fecha: "2025-05-01", fichado: true },
+            { nombre: "Carlos Martínez", fecha: "2025-05-02", fichado: false },
+            { nombre: "Laura Fernández", fecha: "2025-05-01", fichado: true },
+            { nombre: "Juan García", fecha: "2025-05-03", fichado: true },
+            { nombre: "María López", fecha: "2025-05-02", fichado: false },
+            { nombre: "Miguel Torres", fecha: "2025-05-03", fichado: true },
+            { nombre: "Pedro Sánchez", fecha: "2025-05-01", fichado: true }
+        ];
+
+        const tabla = document.getElementById("tablaResultados");
+
+        /* ===== RENDER TABLA ===== */
+        function renderTabla(data) {
+            tabla.innerHTML = "";
+            data.forEach(r => {
+                tabla.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3 font-medium">${r.nombre}</td>
+                        <td>${r.fecha}</td>
+                        <td>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold
+                                ${r.fichado ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                ${r.fichado ? 'Fichado' : 'No fichado'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        /* ===== KPIs + GRÁFICOS ===== */
+        function actualizarDashboard(data) {
+            const fichados = data.filter(d => d.fichado).length;
+            const noFichados = data.length - fichados;
+            const empleadosUnicos = new Set(data.map(d => d.nombre)).size;
+
+            document.getElementById("totalRegistros").textContent = data.length;
+            document.getElementById("fichados").textContent = fichados;
+            document.getElementById("noFichados").textContent = noFichados;
+            document.getElementById("empleadosUnicos").textContent = empleadosUnicos;
+
+            barChart.data.datasets[0].data = [fichados, noFichados];
+            pieChart.data.datasets[0].data = [fichados, noFichados];
+            barChart.update();
+            pieChart.update();
+        }
+
+        /* ===== FILTROS ===== */
+        function aplicarFiltros() {
+            const nombre = document.getElementById("filtroNombre").value.toLowerCase();
+            const inicio = document.getElementById("fechaInicio").value;
+            const fin = document.getElementById("fechaFin").value;
+
+            const filtrados = registros.filter(r => {
+                const okNombre = r.nombre.toLowerCase().includes(nombre);
+                const okInicio = !inicio || r.fecha >= inicio;
+                const okFin = !fin || r.fecha <= fin;
+                return okNombre && okInicio && okFin;
+            });
+
+            renderTabla(filtrados);
+            actualizarDashboard(filtrados);
+        }
+
+        document.querySelectorAll("#filtroNombre, #fechaInicio, #fechaFin")
+            .forEach(el => el.addEventListener("input", aplicarFiltros));
+
+        /* ===== GRÁFICOS ===== */
+        const barChart = new Chart(document.getElementById("barChart"), {
+            type: "bar",
+            data: {
+                labels: ["Fichados", "No fichados"],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ["#16a34a", "#dc2626"]
+                }]
+            }
+        });
+
+        const pieChart = new Chart(document.getElementById("pieChart"), {
+            type: "pie",
+            data: {
+                labels: ["Fichados", "No fichados"],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ["#22c55e", "#ef4444"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        /* INIT */
+        aplicarFiltros();
+    </script>
+
+</body>
+</html>
