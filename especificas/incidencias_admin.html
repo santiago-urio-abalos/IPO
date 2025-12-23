@@ -1,184 +1,222 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Incidencias - Admin</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #e8f1fc; }
-    h1 { margin-bottom: 20px; color: #0b3d91; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Incidencias</title>
 
-    .filters { margin-bottom: 20px; }
-    .filters label { color: #0b3d91; font-weight: bold; }
-    .filters select { padding: 6px; border: 1px solid #0b3d91; border-radius: 4px; }
+<style>
+* { box-sizing:border-box; font-family:Segoe UI, Arial, sans-serif; }
+body { margin:0; padding:24px; background:#f4f6fb; }
 
-    table { width: 100%; border-collapse: collapse; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    th, td { padding: 10px; border-bottom: 1px solid #c7d7ec; text-align: left; }
-    th { background: #0b3d91; color: #ffffff; }
+/* HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
 
-    tr:nth-child(even) { background: #f0f6ff; }
-  </style>
+.header a {
+  text-decoration: none;
+  font-size: 22px;
+  color: #374151;
+}
+
+.header h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.subtitle {
+  color: #000000;
+  font-size: 14px;
+}
+
+/* SUMMARY */
+.summary { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+.summary-card { background:#fff; padding:16px; border-radius:12px; display:flex; gap:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); }
+.icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.pending{background:#fff3cd;color:#996100}
+.resolved{background:#d1fae5;color:#006b47}
+.blocked{background:#fee2e2;color:#d10000}
+
+/* FILTERS */
+.filters{background:#fff;padding:16px;border-radius:12px;display:flex;justify-content:space-between;margin-bottom:20px}
+select{padding:8px 12px;border-radius:8px;border:1px solid #d1d5db}
+
+/* INCIDENT */
+.incident{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;display:flex;justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.incident-left{display:flex;gap:14px}
+.incident-icon{width:42px;height:42px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center}
+.badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.details-btn{border:1px solid #d1d5db;background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+
+/* MODAL */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.4);
+  display:none; align-items:center; justify-content:center;
+}
+.modal{
+  background:#fff; width:420px; border-radius:14px; padding:20px;
+}
+.modal h3{margin-top:0}
+.modal p{font-size:14px;color:#4b5563}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.btn{padding:8px 14px;border-radius:8px;border:1px solid #d1d5db;cursor:pointer}
+.btn.primary{background:#2563eb;color:#fff;border:none}
+</style>
 </head>
+
 <body>
-  <a href="../pages/admin.html" style="font-size:24px; text-decoration:none; color:#0b3d91; position:absolute; top:20px; left:20px;">&#8592;</a>
-  <h1>Incidencias</h1>
 
-  <div class="filters">
-    <label for="filter">Filtrar por:</label>
-    <select id="filter">
-      <option value="dia">Hoy</option>
-      <option value="semana">Esta semana</option>
-      <option value="mes">Este mes</option>
-      <option value="historico">Histórico</option>
-    </select>
+<div class="header">
+  <a href="../pages/admin.html">←</a>
+  <div>
+    <h1>Gestión de Incidencias</h1>
+    <div class="subtitle">Revisar y gestionar incidencias reportadas</div>
   </div>
+</div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Correo</th>
-        <th>Tipo</th>
-        <th>Fecha</th>
-        <th>Estado</th>
-        <th>Comentario</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>abc@click.com</td>
-        <td>Olvido de fichaje</td>
-        <td>17/11/25</td>
-        <td>
-          <select>
-            <option>Pendiente</option>
-            <option>Aceptado</option>
-            <option>Rechazado</option>
-          </select>
-        </td>
-        <td>Comentario de ejemplo.</td>
-      </tr>
-      <tr>
-        <td>xyz@click.com</td>
-        <td>Error de fichaje</td>
-        <td>17/11/25</td>
-        <td>
-          <select>
-            <option>Aceptado</option>
-            <option>Pendiente</option>
-            <option>Rechazado</option>
-          </select>
-        </td>
-        <td>Revisar marcaje.</td>
-      </tr>
-      <tr>
-        <td>lmn@click.com</td>
-        <td>Error de fichaje</td>
-        <td>15/11/25</td>
-        <td>
-          <select>
-            <option>Rechazado</option>
-            <option>Pendiente</option>
-            <option>Aceptado</option>
-          </select>
-        </td>
-        <td>No coincide con hora real.</td>
-      </tr>
-      <tr>
-        <td>qwe@click.com</td>
-        <td>Olvido de fichaje</td>
-        <td>10/11/25</td>
-        <td>
-          <select>
-            <option>Pendiente</option>
-            <option>Aceptado</option>
-            <option>Rechazado</option>
-          </select>
-        </td>
-        <td>Se validó correctamente.</td>
-      </tr>
-      <tr>
-        <td>ruf@click.com</td>
-        <td>Error de fichaje</td>
-        <td>09/11/25</td>
-        <td>
-          <select>
-            <option>Pendiente</option>
-            <option>Aceptado</option>
-            <option>Rechazado</option>
-          </select>
-        </td>
-        <td>Marcaje duplicado.</td>
-      </tr>
-      <tr>
-        <td>kad@click.com</td>
-        <td>Olvido de fichaje</td>
-        <td>01/11/25</td>
-        <td>
-          <select>
-            <option>Pendiente</option>
-            <option>Aceptado</option>
-            <option>Rechazado</option>
-          </select>
-        </td>
-        <td>Inconsistencia con registro previo.</td>
-      </tr>
-    </tbody>
-  </table>
 
-  <script>
-    // PARSEO SEGURO DE FECHAS dd/mm/yy O dd/mm/yyyy
-    function parseDate(str) {
-      const parts = str.split('/');
-      let day = parseInt(parts[0]);
-      let month = parseInt(parts[1]) - 1;
-      let year = parseInt(parts[2]);
+<div class="summary">
+  <div class="summary-card"><div class="icon pending">⏱</div><div>Pendientes<br><strong id="cp">0</strong></div></div>
+  <div class="summary-card"><div class="icon resolved">✔</div><div>Resueltas<br><strong id="cr">0</strong></div></div>
+  <div class="summary-card"><div class="icon blocked">✖</div><div>Bloqueadas<br><strong id="cb">0</strong></div></div>
+</div>
 
-      if (year < 100) year = 2000 + year;
+<div class="filters">
+  <select id="stateFilter">
+    <option value="all">Todos los estados</option>
+    <option value="pending">Pendiente</option>
+    <option value="resolved">Resuelta</option>
+    <option value="blocked">Bloqueada</option>
+  </select>
 
-      const d = new Date(year, month, day);
-      d.setHours(0,0,0,0);
-      return d;
-    }
+  <select id="dateFilter">
+    <option value="today">Hoy</option>
+    <option value="week">Esta semana</option>
+    <option value="month">Este mes</option>
+    <option value="all">Histórico</option>
+  </select>
+</div>
 
-    const filterSelect = document.getElementById('filter');
-    const rows = document.querySelectorAll('tbody tr');
+<div id="incidents"></div>
 
-    filterSelect.addEventListener('change', () => {
-      const now = new Date();
-      now.setHours(0,0,0,0);
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3>Detalles de la Incidencia</h3>
+    <p><strong id="mEmail"></strong></p>
+    <p id="mType"></p>
+    <p id="mDate"></p>
+    <p id="mComment"></p>
 
-      const filter = filterSelect.value;
+    <label>Estado</label>
+    <select id="mState">
+      <option value="pending">Pendiente</option>
+      <option value="resolved">Resuelta</option>
+      <option value="blocked">Bloqueada</option>
+    </select>
 
-      rows.forEach(row => {
-        const dateText = row.children[2].textContent.trim();
-        const date = parseDate(dateText);
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="saveModal()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
 
-        if (isNaN(date.getTime())) {
-          row.style.display = 'none';
-          return;
-        }
+<script>
+const data = [
+  {email:"juan.garcia@empresa.com",type:"Olvido de fichaje",date:"2024-11-18T09:30",state:"pending",comment:"Olvidé fichar la entrada esta mañana."},
+  {email:"maria.lopez@empresa.com",type:"Error de fichaje",date:new Date().toISOString(),state:"resolved",comment:"Salida marcada como pausa."},
+  {email:"carlos.martinez@empresa.com",type:"Olvido de fichaje",date:daysAgo(2),state:"pending",comment:"App no disponible."},
+  {email:"ana.rodriguez@empresa.com",type:"Error de fichaje",date:daysAgo(5),state:"blocked",comment:"Registro duplicado."},
+  {email:"luis.perez@empresa.com",type:"Olvido de fichaje",date:daysAgo(12),state:"pending",comment:"No fichó entrada."},
+  {email:"sofia.diaz@empresa.com",type:"Error de fichaje",date:daysAgo(20),state:"resolved",comment:"Hora incorrecta."},
+  {email:"pedro.sanchez@empresa.com",type:"Olvido de fichaje",date:daysAgo(40),state:"blocked",comment:"Fuera de plazo."}
+];
 
-        const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-        let show = false;
+function daysAgo(d){ const dt=new Date(); dt.setDate(dt.getDate()-d); return dt.toISOString(); }
 
-        switch (filter) {
-          case 'dia':
-            show = (diffDays === 0);
-            break;
-          case 'semana':
-            show = (diffDays >= 0 && diffDays <= 7);
-            break;
-          case 'mes':
-            show = (diffDays >= 0 && diffDays <= 30);
-            break;
-          case 'historico':
-            show = true;
-            break;
-        }
+const container=document.getElementById("incidents");
+let current=null;
 
-        row.style.display = show ? '' : 'none';
-      });
-    });
-  </script>
+function render(){
+  container.innerHTML="";
+  let cp=0,cr=0,cb=0;
+
+  data.forEach((i,idx)=>{
+    if(i.state==="pending")cp++;
+    if(i.state==="resolved")cr++;
+    if(i.state==="blocked")cb++;
+
+    const el=document.createElement("div");
+    el.className="incident";
+    el.dataset.idx=idx;
+    el.dataset.state=i.state;
+    el.dataset.date=i.date;
+
+    el.innerHTML=`
+      <div class="incident-left">
+        <div class="incident-icon">!</div>
+        <div>
+          <strong>${i.type}</strong>
+          <span class="badge ${i.state}">${label(i.state)}</span>
+          <p>${i.email}</p>
+          <p>${new Date(i.date).toLocaleString()}</p>
+        </div>
+      </div>
+      <button class="details-btn" onclick="openModal(${idx})">Ver detalles</button>
+    `;
+    container.appendChild(el);
+  });
+
+  cpEl.textContent=cp; crEl.textContent=cr; cbEl.textContent=cb;
+  applyFilters();
+}
+
+function label(s){return s==="pending"?"Pendiente":s==="resolved"?"Resuelta":"Bloqueada";}
+
+function openModal(idx){
+  current=idx;
+  const i=data[idx];
+  mEmail.textContent=i.email;
+  mType.textContent=i.type;
+  mDate.textContent=new Date(i.date).toLocaleString();
+  mComment.textContent=i.comment;
+  mState.value=i.state;
+  modal.style.display="flex";
+}
+
+function closeModal(){ modal.style.display="none"; }
+
+function saveModal(){
+  data[current].state=mState.value;
+  closeModal();
+  render();
+}
+
+function applyFilters(){
+  const s=stateFilter.value;
+  const d=dateFilter.value;
+  document.querySelectorAll(".incident").forEach(el=>{
+    const diff=(new Date()-new Date(el.dataset.date))/86400000;
+    const okState=s==="all"||el.dataset.state===s;
+    const okDate=d==="all"||(d==="today"&&diff<1)||(d==="week"&&diff<=7)||(d==="month"&&diff<=30);
+    el.style.display=(okState&&okDate)?"":"none";
+  });
+}
+
+stateFilter.onchange=applyFilters;
+dateFilter.onchange=applyFilters;
+
+const cpEl=document.getElementById("cp");
+const crEl=document.getElementById("cr");
+const cbEl=document.getElementById("cb");
+
+render();
+</script>
+
 </body>
 </html>
