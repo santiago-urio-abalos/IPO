@@ -1,185 +1,532 @@
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Usuarios - Admin</title>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestionar Usuarios</title>
+
     <style>
-    body {
+      body {
         font-family: Arial, sans-serif;
-        background: #e8f1fc;
+        background: #f4f7fb;
         margin: 0;
-        padding: 0;
-    }
-    .container {
-        max-width: 700px;
-        margin: 50px auto;
-        background: #fff;
-        padding: 20px 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        position: relative;
-    }
-    h1 {
-        text-align: center;
-        color: #0b3d91;
-        margin: 0;
-    }
-    .back-icon {
-        position: absolute;
-        top: 20px;
-        left: 30px;
-        font-size: 24px;
-        text-decoration: none;
-        color: #0b3d91;
-    }
-    .search-bar {
+        padding: 30px;
+      }
+
+      /* ===== HEADER ===== */
+      .header {
         display: flex;
-        margin-bottom: 20px;
-    }
-    .search-bar input {
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+      }
+
+      .header a {
+        text-decoration: none;
+        font-size: 22px;
+        color: #111;
+      }
+
+      .header h1 {
+        margin: 0;
+      }
+
+      .header p {
+        margin: 2px 0 0;
+        color: #555;
+        font-size: 14px;
+      }
+
+      /* ===== STATS ===== */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .stat-card {
+        background: #fff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+
+      .stat-title {
+        font-size: 14px;
+        color: #555;
+      }
+
+      .stat-value {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      /* ===== SEARCH ===== */
+      .search-box {
+        background: #fff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 25px;
+      }
+
+      .search-box input,
+      .search-box select {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
         flex: 1;
-        padding: 8px;
-        border: 1px solid #0b3d91;
-        border-radius: 4px 0 0 4px;
-    }
-    .search-bar select {
-        padding: 8px;
-        border: 1px solid #0b3d91;
-        border-left: none;
-        border-radius: 0 4px 4px 0;
+      }
+
+      /* ===== USER CARD ===== */
+      .user-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .user-info {
+        display: flex;
+        gap: 15px;
+      }
+
+      .avatar {
+        width: 45px;
+        height: 45px;
+        background: #eef2f7;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+
+      .user-info p {
+        margin: 4px 0;
+        font-size: 14px;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        margin-left: 5px;
+      }
+
+      .badge.user {
+        background: #e5e7eb;
+      }
+
+      .badge.admin {
+        background: #ede9fe;
+        color: #6d28d9;
+      }
+
+      .badge.inactive {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      /* ===== ACTIONS ===== */
+      .actions button {
+        margin-left: 5px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
         background: #fff;
         cursor: pointer;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th, td {
-        text-align: left;
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-    }
-    th {
-        background: #f0f6ff;
-    }
-    button {
-        padding: 5px 10px;
-        margin-right: 5px;
+      }
+
+      .actions .delete {
+        border-color: #dc2626;
+        color: #dc2626;
+      }
+
+      .actions .change-pass {
+        border-color: #078836;
+        color: #078836;
+      }
+
+      /* ===== MODAL ===== */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal {
+        background: #fff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 400px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .modal-actions button {
+        padding: 8px 14px;
+        border-radius: 6px;
         border: none;
-        border-radius: 4px;
         cursor: pointer;
-        font-weight: bold;
-    }
-    .delete {
-        background: #b80600;
-        color: #fff;
-    }
-    .change-pass {
-        background: #397439;
-        color: #fff;
-    }
-    .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-    white-space: nowrap;
-    border: 0;
-    }
+      }
 
+      .btn-cancel {
+        background: #e5e7eb;
+      }
+
+      .btn-danger {
+        background: #dc2626;
+        color: white;
+      }
+
+      .btn-success {
+        background: #00802f;
+        color: white;
+      }
+
+      /* ===== ACCESSIBILITY ===== */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      /* ===== CAMPO CONTRASEÑA EN MODAL ===== */
+      .password-field {
+        margin-top: 15px;
+        padding: 10px 0;
+        position: relative;
+      }
+
+      .password-field label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .password-field input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+
+      .password-field input.error {
+        border-color: #dc2626;
+        background-color: #fee2e2;
+      }
+
+      .password-field .success-tick {
+        position: absolute;
+        right: 15px;
+        top: 38px;
+        font-size: 18px;
+        color: #00802f;
+        display: none;
+      }
+
+      .error-message {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+      }
     </style>
-    </head>
-    <body>
+  </head>
 
-    <div class="container">
-    <a href="../pages/admin.html" class="back-icon">&#8592;</a>
-    <h1>Gestión de Usuarios</h1>
-    
-    <div class="search-bar">
-    <label for="searchInput" class="sr-only">Buscar usuarios por correo</label>
-    <input type="text" id="searchInput" placeholder="Buscar por correo...">
-
-    <label for="sortSelect" class="sr-only">Ordenar usuarios</label>
-    <select id="sortSelect">
-        <option value="asc">Ascendente</option>
-        <option value="desc">Descendente</option>
-    </select>
+  <body>
+    <!-- HEADER -->
+    <div class="header">
+      <a href="../pages/admin.html" aria-label="Volver">&#8592;</a>
+      <div>
+        <h1>Gestionar Usuarios</h1>
+        <p>Buscar, editar y administrar usuarios del sistema</p>
+      </div>
     </div>
 
-
-    
-    <table id="usersTable">
-        <thead>
-        <tr>
-            <th>Correo</th>
-            <th>Acciones</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr><td>adm@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>ana@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>beatriz@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>carlos@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>diana@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>eduardo@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>felipe@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>gloria@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>hector@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        <tr><td>isabel@click.com</td><td><button class="delete">Eliminar</button><button class="change-pass">Cambiar contraseña</button></td></tr>
-        </tbody>
-    </table>
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-title">Total Usuarios</div>
+        <div class="stat-value">8</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Usuarios Activos</div>
+        <div class="stat-value">7</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Administradores</div>
+        <div class="stat-value">2</div>
+      </div>
     </div>
+
+    <!-- SEARCH -->
+    <div class="search-box">
+      <label for="searchInput" class="sr-only">Buscar usuarios</label>
+      <input type="text" id="searchInput" placeholder="Buscar por correo..." />
+
+      <label for="sortSelect" class="sr-only">Ordenar</label>
+      <select id="sortSelect">
+        <option value="asc">A - Z</option>
+        <option value="desc">Z - A</option>
+      </select>
+    </div>
+
+    <!-- USERS -->
+    <div id="usersList">
+      <div class="user-card" data-id="1">
+        <div class="user-info">
+          <div class="avatar">A</div>
+          <div>
+            <strong>Ana Rodríguez</strong>
+            <span class="badge user">Usuario</span>
+            <span class="badge inactive">Inactivo</span>
+            <p>ana@click.com</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="delete" data-email="ana@click.com">Eliminar</button>
+          <button class="change-pass" data-email="ana@click.com">
+            Cambiar contraseña
+          </button>
+        </div>
+      </div>
+
+      <div class="user-card" data-id="2">
+        <div class="user-info">
+          <div class="avatar">C</div>
+          <div>
+            <strong>Carlos Martínez</strong>
+            <span class="badge user">Usuario</span>
+            <p>carlos@click.com</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="delete" data-email="carlos@click.com">Eliminar</button>
+          <button class="change-pass" data-email="carlos@click.com">
+            Cambiar contraseña
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h3 id="modalTitle">
+          <span class="sr-only">Diálogo de confirmación</span>
+        </h3>
+
+        <p id="modalMessage"></p>
+
+        <div id="passwordField" class="password-field" style="display: none">
+          <label for="newPassword">Nueva contraseña</label>
+          <input id="newPassword" type="password" />
+          <span class="success-tick">&#10003;</span>
+          <div class="error-message" id="passwordError">
+            Debes ingresar una contraseña
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" id="modalCancel">Cancelar</button>
+          <button id="modalConfirm">
+            <span class="sr-only">Confirmar acción</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+    class="error-message"
+    id="passwordSuccess"
+    style="
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        color: #065f46;
+        background: #d1fae5;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 14px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        z-index: 2000;
+    ">
+    ✅ Contraseña guardada correctamente
+    </div>
+
 
     <script>
-    const searchInput = document.getElementById('searchInput');
-    const sortSelect = document.getElementById('sortSelect');
-    const usersTable = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
+      const searchInput = document.getElementById("searchInput");
+      const sortSelect = document.getElementById("sortSelect");
+      const usersList = document.getElementById("usersList");
 
-    function filterAndSort() {
-    const filter = searchInput.value.toLowerCase();
-    const rows = Array.from(usersTable.getElementsByTagName('tr'));
+      const modalOverlay = document.getElementById("modalOverlay");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalMessage = document.getElementById("modalMessage");
+      const modalConfirm = document.getElementById("modalConfirm");
+      const modalCancel = document.getElementById("modalCancel");
+      const passwordField = document.getElementById("passwordField");
+      const newPasswordInput = document.getElementById("newPassword");
+      const passwordError = document.getElementById("passwordError");
+      const successTick = passwordField.querySelector(".success-tick");
 
-    // Filtrar: solo aquellos que empiezan con la cadena ingresada
-    rows.forEach(row => {
-        const email = row.cells[0].textContent.toLowerCase();
-        row.style.display = email.startsWith(filter) ? '' : 'none';
-    });
+      let currentAction = null;
+      let currentTarget = null;
 
-    // Ordenar
-    const visibleRows = rows.filter(row => row.style.display !== 'none');
-    visibleRows.sort((a, b) => {
-        const emailA = a.cells[0].textContent.toLowerCase();
-        const emailB = b.cells[0].textContent.toLowerCase();
-        return sortSelect.value === 'asc' ? emailA.localeCompare(emailB) : emailB.localeCompare(emailA);
-    });
+      /* SEARCH + SORT */
+      function filterAndSort() {
+        const filter = searchInput.value.toLowerCase();
+        const cards = Array.from(usersList.children);
 
-    // Reordenar en el DOM
-    visibleRows.forEach(row => usersTable.appendChild(row));
-    }
+        cards.forEach((card) => {
+          card.style.display = card.innerText.toLowerCase().includes(filter)
+            ? ""
+            : "none";
+        });
 
-    // Eventos
-    searchInput.addEventListener('input', filterAndSort);
-    sortSelect.addEventListener('change', filterAndSort);
+        const visible = cards.filter((c) => c.style.display !== "none");
+        visible.sort((a, b) =>
+          sortSelect.value === "asc"
+            ? a.innerText.localeCompare(b.innerText)
+            : b.innerText.localeCompare(a.innerText)
+        );
 
-    // Funciones de botones
-    usersTable.addEventListener('click', function(e){
-    if(e.target.classList.contains('delete')){
-        if(confirm('¿Deseas eliminar este usuario?')){
-        e.target.closest('tr').remove();
+        visible.forEach((c) => usersList.appendChild(c));
+      }
+
+      searchInput.addEventListener("input", filterAndSort);
+      sortSelect.addEventListener("change", filterAndSort);
+
+      /* MODAL CONTROL */
+      function openModal({
+        title,
+        message,
+        confirmText,
+        confirmClass,
+        action,
+      }) {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalConfirm.textContent = confirmText;
+        modalConfirm.className = confirmClass;
+        currentAction = action;
+        modalOverlay.style.display = "flex";
+      }
+
+      function closeModal() {
+        modalOverlay.style.display = "none";
+        passwordField.style.display = "none";
+        newPasswordInput.value = "";
+        newPasswordInput.classList.remove("error");
+        passwordError.style.display = "none";
+        successTick.style.display = "none";
+      }
+
+      modalCancel.addEventListener("click", closeModal);
+
+      /* VALIDACIÓN Y TICK VERDE */
+      newPasswordInput.addEventListener("input", () => {
+        const pass = newPasswordInput.value.trim();
+        if (pass) {
+          passwordError.style.display = "none";
+          newPasswordInput.classList.remove("error");
+          successTick.style.display = "inline";
+        } else {
+          successTick.style.display = "none";
         }
-    }
-    if(e.target.classList.contains('change-pass')){
-        const newPass = prompt('Ingrese nueva contraseña:');
-        if(newPass){
-        alert('Contraseña cambiada a: ' + newPass);
+      });
+
+      modalConfirm.addEventListener("click", () => {
+        if (currentAction) {
+          if (passwordField.style.display === "block") {
+            const pass = newPasswordInput.value.trim();
+            if (!pass) {
+              passwordError.style.display = "block";
+              newPasswordInput.classList.add("error");
+              newPasswordInput.focus();
+              return;
+            }
+            passwordError.style.display = "none";
+            newPasswordInput.classList.remove("error");
+            successTick.style.display = "inline";
+            currentAction();
+            closeModal();
+          } else {
+            currentAction();
+            closeModal();
+          }
+        } else {
+          closeModal();
         }
-    }
-    });
+      });
+
+      /* USER ACTIONS */
+      usersList.addEventListener("click", (e) => {
+        if (e.target.classList.contains("delete")) {
+          currentTarget = e.target.closest(".user-card");
+
+          openModal({
+            title: "Eliminar usuario",
+            message: "¿Seguro que deseas eliminar este usuario?",
+            confirmText: "Eliminar",
+            confirmClass: "btn-danger",
+            action: () => currentTarget.remove(),
+          });
+        }
+
+        if (e.target.classList.contains("change-pass")) {
+          const email = e.target.dataset.email;
+          passwordField.style.display = "block";
+
+          openModal({
+            title: "Cambiar contraseña",
+            message: "Nueva contraseña para " + email,
+            confirmText: "Guardar",
+            confirmClass: "btn-success",
+            action: () => {
+              const pass = newPasswordInput.value.trim();
+              const successMsg = document.getElementById("passwordSuccess");
+
+              // Seguridad extra (aunque ya validas antes)
+              if (!pass) return;
+
+              console.log("Nueva contraseña:", email, pass);
+
+              successMsg.style.display = "block";
+
+              setTimeout(() => {
+                successMsg.style.display = "none";
+                closeModal();
+              }, 3000);
+            },
+          });
+        }
+      });
     </script>
-
-    </body>
-    </html>
+  </body>
+</html>

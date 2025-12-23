@@ -1,233 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Perfil y configuración</title>
+<meta charset="UTF-8">
+<title>Prueba mensaje</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 40px;
+}
 
-    <style>
-        .user-card { display: flex; align-items: center; gap: 14px; }
-        .user-avatar { width: 55px; height: 55px; background: #2563eb; color: #fff; border-radius: 50%; display: flex; font-size: 24px; align-items: center; justify-content: center; }
-        .user-name { margin: 0; font-size: 18px; font-weight: 600; }
-        .user-email { margin: 0; color: #374151; }
-        .settings-section { margin-top: 32px; padding-bottom: 14px; border-bottom: 1px solid #e5e7eb; }
-        .section-desc { color: #4b5563; margin-top: 4px; }
+/* MODAL */
+.modal {
+  border: 1px solid #ccc;
+  padding: 20px;
+  width: 300px;
+}
 
-        /* ------------------------- SWITCH ACCESIBLE PERFECTO ------------------------- */
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+}
 
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 18px;
-        }
+button {
+  margin-top: 10px;
+  padding: 8px 12px;
+}
 
-        .switch-full {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .switch-text {
-            font-size: 16px;
-        }
-
-        .switch-wrapper {
-            position: relative;
-            width: 46px;
-            height: 24px;
-        }
-
-        /* Checkbox invisible pero clicable */
-        .switch-wrapper input {
-            position: absolute;
-            width: 46px;
-            height: 24px;
-            opacity: 0;
-            cursor: pointer;
-            z-index: 2;
-            margin: 0;
-        }
-
-        /* Slider visible */
-        .switch-wrapper .slider {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 46px;
-            height: 24px;
-            background: #ccc;
-            border-radius: 24px;
-            transition: .3s;
-            z-index: 1;
-        }
-
-        .switch-wrapper .slider::before {
-            content: "";
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            left: 2px;
-            top: 2px;
-            background: #ffffff;
-            border-radius: 50%;
-            transition: .3s;
-        }
-
-        .switch-wrapper input:checked + .slider {
-            background: #2563eb;
-        }
-
-        .switch-wrapper input:checked + .slider::before {
-            transform: translateX(22px);
-        }
-
-        /* -------------------------------------------------------------------------------- */
-
-        .logout-btn { width: 100%; background: #dc2626; color: white; border: none; padding: 12px; margin-top: 30px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .topbar { background: #ffffff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .topbar img { width: 24px; height: auto; cursor: pointer; }
-    </style>
+/* MENSAJE FIJO */
+#mensajeOK {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #d1fae5;
+  color: #065f46;
+  padding: 12px 20px;
+  border-radius: 6px;
+  border: 1px solid #10b981;
+  display: none;
+  z-index: 9999;
+}
+</style>
 </head>
 
-<body class="bg-[#F4F7FB] min-h-screen">
+<body>
 
-<div class="topbar">
-    <img src="https://cdn-icons-png.flaticon.com/512/271/271218.png"
-         alt="Volver al tablero"
-         id="btnBack">
-    <h1 class="text-lg font-semibold">Perfil y configuración</h1>
+<div class="modal">
+  <label>Nueva contraseña</label>
+  <input type="password" id="password">
+  <button onclick="guardar()">Guardar</button>
 </div>
 
-<div class="p-6">
-    <div class="settings-section user-card">
-        <div class="user-avatar" aria-hidden="true">U</div>
-        <div>
-            <h3 class="user-name"></h3>
-            <p class="user-email"></p>
-        </div>
-    </div>
-
-    <!-- Preferencias -->
-    <div class="settings-section">
-        <h3 class="font-semibold">Preferencias</h3>
-        <p class="section-desc">Personaliza tu experiencia</p>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Idioma</span>
-                <select id="languageSelect" class="border rounded px-2 py-1 text-sm ml-4">
-                    <option>Español</option>
-                    <option>Inglés</option>
-                    <option>Francés</option>
-                </select>
-            </label>
-        </div>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Tema oscuro</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="darkModeToggle">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-
-    </div>
-
-    <!-- Notificaciones -->
-    <div class="settings-section">
-        <h3 class="font-semibold">Notificaciones</h3>
-        <p class="section-desc">Configura alertas y recordatorios</p>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Notificaciones push</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="pushNotifications">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Recordatorios de fichaje</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="clockInReminders">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Vibración al fichar</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="vibrationOnClockIn">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-    </div>
-
-    <button class="logout-btn" id="logoutBtn">Cerrar sesión</button>
+<div id="saveMessage" style="
+  display:none;
+  margin-top:15px;
+  padding:10px;
+  background:#d1fae5;
+  color:#065f46;
+  border-radius:6px;
+  font-size:14px;
+">
+  ✅ Contraseña guardada correctamente
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAvCdYCrUbv37mulXHDtYvRhTTNXDyNiFc",
-        authDomain: "click-df584.firebaseapp.com",
-        projectId: "click-df584",
-        storageBucket: "click-df584.firebasestorage.app",
-        messagingSenderId: "410988732262",
-        appId: "1:410988732262:web:0531fd4ed3bdc01fa2f2a7",
-        measurementId: "G-2VZB7X7HCR"
-    };
+<script>
+function guardar() {
+  const pass = document.getElementById("password").value.trim();
+  const saveMessage = document.getElementById("saveMessage");
 
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+  if (!pass) {
+    alert("Debes introducir una contraseña");
+    return;
+  }
 
-    const nameEl  = document.querySelector(".user-name");
-    const emailEl = document.querySelector(".user-email");
-    const logoutBtn = document.getElementById("logoutBtn");
+  // CONFIRMACIÓN INFALIBLE
+  alert("✅ Contraseña guardada correctamente");
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            window.location.href = "../pages/index.html";
-            return;
-        }
-        nameEl.textContent  = user.displayName || "Usuario";
-        emailEl.textContent = user.email || "";
-    });
+  // MENSAJE VISUAL
+  saveMessage.style.display = "block";
 
-    logoutBtn.addEventListener("click", async () => {
-        await signOut(auth);
-        window.location.href = "../pages/index.html";
-    });
+  setTimeout(() => {
+    saveMessage.style.display = "none";
+  }, 3000);
 
-    // Botón regresar según ROL
-    const backBtn = document.getElementById("btnBack");
-
-    backBtn.addEventListener("click", () => {
-        const role = localStorage.getItem("userRole") || "user";
-        let target = "../pages/usuario.html";
-
-        if (role === "admin")  target = "../pages/admin.html";
-        if (role === "rrhh")   target = "../pages/rrhh.html";
-
-        window.location.href = target;
-    });
-
+  console.log("Contraseña guardada:", pass);
+}
 </script>
+
 
 </body>
 </html>
