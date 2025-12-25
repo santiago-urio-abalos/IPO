@@ -4,36 +4,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Incidencias</title>
+  
+  <!-- Fuentes y FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous">
+  
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Dark Mode Inicial -->
+  <script>
+    (function() {
+      try {
+        if(localStorage.getItem('darkMode') === 'enabled') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch(e){}
+    })();
+  </script>
+
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background: #F4F7FB; color: #1F2937; }
-    .card { background: #fff; border-radius: 18px; border: 1px solid #E5E7EB; box-shadow: 0 8px 28px rgba(18, 38, 63, 0.05); padding: 18px; }
+    .card { background: #fff; border-radius: 18px; border: 1px solid #E5E7EB; box-shadow: 0 8px 28px rgba(18,38,63,0.05); padding: 18px; }
     .pill-status { padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 700; text-transform: capitalize; }
     .pill-pendiente { background: #EEF2FF; color: #4338CA; }
     .pill-aprobada { background: #DCFCE7; color: #15803D; }
     .pill-rechazada { background: #FEE2E2; color: #B91C1C; }
-    .modal-overlay { position: fixed; inset: 0; padding: 20px 16px; background: rgba(0,0,0,0.45); display: none; align-items: flex-start; justify-content: center; overflow-y: auto; z-index: 50; }
-    .modal { background: #fff; width: min(620px, 95vw); border-radius: 18px; box-shadow: 0 20px 90px rgba(0,0,0,0.20); padding: 22px; margin: 24px auto; max-height: calc(100vh - 60px); overflow-y: auto; }
-    .field-label { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
-    .input { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #E5E7EB; background: #F9FAFB; outline: none; font-size: 14px; }
-    .select { position: relative; }
-    .select-head { border: 1px solid #E5E7EB; border-radius: 12px; padding: 12px 14px; background: #F9FAFB; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
-    .select-options { position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.12); display: none; z-index: 10; }
-    .select-option { padding: 12px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
-    .select-option:hover { background: #F3F4F6; }
-    .calendar { user-select: none; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .cal-day { height: 40px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
-    .cal-day:hover { background: #EEF2FF; }
-    .cal-day.selected { background: #0c0f1c; color: #fff; box-shadow: 0 0 0 3px #0c0f1c22; }
-    .cal-day.today { box-shadow: 0 0 0 2px rgba(0,0,0,0.15); }
+    .modal-overlay { position: fixed; inset:0; background: rgba(0,0,0,0.45); display:none; align-items:flex-start; justify-content:center; overflow-y:auto; z-index:50; padding:20px 16px; }
+    .modal { background:#fff; width:min(620px,95vw); border-radius:18px; box-shadow:0 20px 90px rgba(0,0,0,0.2); padding:22px; margin:24px auto; max-height:calc(100vh-60px); overflow-y:auto; }
+    .field-label { font-weight:600; font-size:14px; margin-bottom:6px; }
+    .input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:14px; color:#1F2937; }
+    .select { position:relative; }
+    .select-head { border:1px solid #E5E7EB; border-radius:12px; padding:12px 14px; background:#F9FAFB; cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:14px; color:#1F2937; }
+    .select-options { position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid #E5E7EB; border-radius:12px; box-shadow:0 16px 40px rgba(0,0,0,0.12); display:none; z-index:10; color:#1F2937; }
+    .select-option { padding:12px 14px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; }
+    .select-option:hover { background:#F3F4F6; }
+    .calendar { user-select:none; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+    .cal-day { height:40px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; }
+    .cal-day:hover { background:#EEF2FF; }
+    .cal-day.selected { background:#0c0f1c; color:#fff; box-shadow:0 0 0 3px #0c0f1c22; }
+    .cal-day.today { box-shadow:0 0 0 2px rgba(0,0,0,0.15); }
+
+    /* Dark Mode */
+    html.dark body { background:#0f172a; color:#f9fafb; }
+    html.dark .card { background:#111827; border-color:#1f2937; box-shadow:0 8px 28px rgba(0,0,0,0.45); }
+    html.dark .text-gray-500 { color:#9ca3af !important; }
+    html.dark .input, html.dark .select-head { background:#1f2937; border-color:#374151; color:#f9fafb; }
+    html.dark .select-options { background:#111827; border-color:#374151; color:#f9fafb; }
+    html.dark .cal-day:hover { background:#1f2937; }
+    html.dark .cal-day.selected { background:#2563eb; color:#ffffff; }
+    html.dark .cal-day.today { box-shadow:0 0 0 2px rgba(147,197,253,0.6); }
+    html.dark .pill-pendiente { background:#1e3a8a22; color:#4338ca; }
+    html.dark .pill-aprobada { background:#16653422; color:#15803d; }
+    html.dark .pill-rechazada { background:#991b1b22; color:#b91c1c; }
+    html.dark #btnNew { background:#2563eb; color:#fff; }
+    html.dark #btnNew:hover { background:#1d4ed8; }
+    html.dark .modal { background:#111827; color:#f9fafb; }
+    html.dark .modal-overlay { background: rgba(0,0,0,0.65); }
+    html.dark .text-gray-600 { color:#d1d5db; }
+    html.dark .text-gray-700 { color:#e5e7eb; }
   </style>
 </head>
 <body class="min-h-screen">
+
   <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
     <header class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-4">
@@ -42,12 +78,11 @@
         </button>
         <div>
           <h1 class="text-2xl font-bold">Incidencias</h1>
-          <p class="text-gray-500 text-sm">Gestiona tus registros</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Gestiona tus registros</p>
         </div>
       </div>
       <button id="btnNew" class="h-10 px-4 rounded-lg bg-[#0c0f1c] text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90">
-        <i class="fa-solid fa-plus"></i>
-        Nueva incidencia
+        <i class="fa-solid fa-plus"></i> Nueva incidencia
       </button>
     </header>
 
@@ -77,7 +112,7 @@
 
     <div class="card">
       <h3 class="text-lg font-semibold mb-1">Historial de incidencias</h3>
-      <p class="text-sm text-gray-500 mb-3">Todas tus incidencias reportadas</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Todas tus incidencias reportadas</p>
       <div id="listIncidencias" class="space-y-3"></div>
     </div>
   </div>
@@ -88,7 +123,7 @@
       <div class="flex items-start justify-between mb-2">
         <div>
           <h3 class="text-xl font-semibold">Crear incidencia</h3>
-          <p class="text-sm text-gray-500">Reporta un olvido de fichaje o un error en tus registros</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Reporta un olvido de fichaje o un error en tus registros</p>
         </div>
         <button class="text-gray-500 hover:text-gray-700" aria-label="Cerrar" onclick="toggleModal(false)"><i class="fa-solid fa-xmark"></i></button>
       </div>
@@ -115,14 +150,14 @@
         </div>
 
         <div>
-          <div class="field-label">D&iacute;a</div>
+          <div class="field-label">Día</div>
           <div class="card calendar">
             <div class="flex items-center justify-between mb-2">
-              <button class="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100" id="prevCal"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+              <button class="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100" aria-label="Mes anterior" id="prevCal"><i class="fa-solid fa-chevron-left text-sm"></i></button>
               <div id="calLabel" class="font-semibold">Mes</div>
-              <button class="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100" id="nextCal"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+              <button class="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100" aria-label="Mes siguiente" id="nextCal"><i class="fa-solid fa-chevron-right text-sm"></i></button>
             </div>
-            <div class="cal-grid text-center text-sm text-gray-500 mb-2">
+            <div class="cal-grid text-center text-sm text-gray-500 dark:text-gray-400 mb-2">
               <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
             </div>
             <div id="calDays" class="cal-grid text-center"></div>
@@ -130,8 +165,8 @@
         </div>
 
         <div>
-          <div class="field-label">Descripci&oacute;n</div>
-          <textarea id="descInput" rows="3" class="input" placeholder="Explica qu&eacute; sucedi&oacute; y proporciona los detalles necesarios..."></textarea>
+          <div class="field-label">Descripción</div>
+          <textarea id="descInput" rows="3" class="input" aria-label="Descripción de la incidencia" placeholder="Explica qué sucedió y proporciona los detalles necesarios..."></textarea>
         </div>
       </div>
 
@@ -142,201 +177,127 @@
     </div>
   </div>
 
+  <!-- Funciones JS -->
   <script>
-    const STORAGE_KEY = 'incidencias-data';
-    const typeSelect = document.getElementById('typeSelect');
-    const typeHead = document.getElementById('typeHead');
-    const typeOptions = document.getElementById('typeOptions');
-    const typeSelected = document.getElementById('typeSelected');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const calDays = document.getElementById('calDays');
-    const calLabel = document.getElementById('calLabel');
-    const prevCal = document.getElementById('prevCal');
-    const nextCal = document.getElementById('nextCal');
-    const descInput = document.getElementById('descInput');
-    const listIncidencias = document.getElementById('listIncidencias');
-    let today = new Date();
-    let currentMonth = today.getMonth();
-    let currentYear = today.getFullYear();
-    let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    // ===== Variables y helpers =====
+    const STORAGE_KEY='incidencias-data';
+    const typeSelect=document.getElementById('typeSelect');
+    const typeHead=document.getElementById('typeHead');
+    const typeOptions=document.getElementById('typeOptions');
+    const typeSelected=document.getElementById('typeSelected');
+    const modalOverlay=document.getElementById('modalOverlay');
+    const calDays=document.getElementById('calDays');
+    const calLabel=document.getElementById('calLabel');
+    const prevCal=document.getElementById('prevCal');
+    const nextCal=document.getElementById('nextCal');
+    const descInput=document.getElementById('descInput');
+    const listIncidencias=document.getElementById('listIncidencias');
+    let today=new Date(), currentMonth=today.getMonth(), currentYear=today.getFullYear();
+    let selectedDate=new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    function pad(n) { return n.toString().padStart(2, '0'); }
-    function keyDate(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+    function pad(n){ return n.toString().padStart(2,'0'); }
 
-    function loadIncidencias() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
-      } catch (e) { console.warn('No se pudo leer incidencias', e); }
-      const sample = [{
-        id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
-        type: 'Olvido de fichaje',
-        date: new Date().toISOString(),
-        description: 'Prueba',
-        status: 'pendiente'
-      }];
+    // ===== Carga y guardado =====
+    function loadIncidencias(){
+      try{
+        const raw=localStorage.getItem(STORAGE_KEY);
+        if(raw) return JSON.parse(raw);
+      }catch(e){ console.warn(e); }
+      const sample=[{id:crypto.randomUUID?crypto.randomUUID():Date.now(),type:'Olvido de fichaje',date:new Date().toISOString(),description:'Prueba',status:'pendiente'}];
       saveIncidencias(sample);
       return sample;
     }
-    function saveIncidencias(data) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.warn('No se pudo guardar incidencias', e); }
-    }
-    let incidencias = loadIncidencias();
+    function saveIncidencias(data){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); }catch(e){console.warn(e);} }
+    let incidencias=loadIncidencias();
 
-    function toggleModal(show) {
-      modalOverlay.style.display = show ? 'flex' : 'none';
-      if (show) {
-        descInput.value = '';
-        selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        currentMonth = selectedDate.getMonth();
-        currentYear = selectedDate.getFullYear();
+    // ===== Modal =====
+    function toggleModal(show){
+      modalOverlay.style.display=show?'flex':'none';
+      if(show){
+        descInput.value='';
+        selectedDate=new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        currentMonth=selectedDate.getMonth();
+        currentYear=selectedDate.getFullYear();
         renderCalendar();
       }
     }
 
-    typeHead.addEventListener('click', () => {
-      typeOptions.style.display = typeOptions.style.display === 'block' ? 'none' : 'block';
-    });
-    document.addEventListener('click', (e) => {
-      if (!typeSelect.contains(e.target)) typeOptions.style.display = 'none';
-    });
-    Array.from(typeOptions.children).forEach(opt => {
-      opt.addEventListener('click', () => {
-        typeSelected.textContent = opt.dataset.value;
-        Array.from(typeOptions.children).forEach(o => o.querySelector('i').classList.add('hidden'));
+    // ===== Selector tipo =====
+    typeHead.addEventListener('click',()=>{ typeOptions.classList.toggle('hidden'); });
+    document.addEventListener('click',(e)=>{ if(!typeSelect.contains(e.target)) typeOptions.classList.add('hidden'); });
+    Array.from(typeOptions.children).forEach(opt=>{
+      opt.addEventListener('click',()=>{
+        typeSelected.textContent=opt.dataset.value;
+        Array.from(typeOptions.children).forEach(o=>o.querySelector('i').classList.add('hidden'));
         opt.querySelector('i').classList.remove('hidden');
-        typeOptions.style.display = 'none';
+        typeOptions.classList.add('hidden');
       });
     });
 
-    function renderCalendar() {
-      calDays.innerHTML = '';
-      calLabel.textContent = new Date(currentYear, currentMonth).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-      const firstDay = new Date(currentYear, currentMonth, 1);
-      const startWeekday = firstDay.getDay();
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      for (let i = 0; i < startWeekday; i++) {
-        const span = document.createElement('span');
-        span.className = 'h-10';
-        calDays.appendChild(span);
-      }
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateObj = new Date(currentYear, currentMonth, d);
-        const btn = document.createElement('button');
-        btn.className = 'cal-day';
-        btn.textContent = d;
-        if (dateObj.toDateString() === selectedDate.toDateString()) btn.classList.add('selected');
-        if (dateObj.toDateString() === today.toDateString()) btn.classList.add('today');
-        btn.onclick = () => { selectedDate = dateObj; renderCalendar(); };
+    // ===== Calendario =====
+    function renderCalendar(){
+      calDays.innerHTML='';
+      calLabel.textContent=new Date(currentYear,currentMonth).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+      const firstDay=new Date(currentYear,currentMonth,1);
+      const startWeekday=firstDay.getDay();
+      const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
+      for(let i=0;i<startWeekday;i++){ const span=document.createElement('span'); span.className='h-10'; calDays.appendChild(span); }
+      for(let d=1;d<=daysInMonth;d++){
+        const dateObj=new Date(currentYear,currentMonth,d);
+        const btn=document.createElement('button'); btn.className='cal-day'; btn.textContent=d;
+        if(dateObj.toDateString()===selectedDate.toDateString()) btn.classList.add('selected');
+        if(dateObj.toDateString()===today.toDateString()) btn.classList.add('today');
+        btn.onclick=()=>{ selectedDate=dateObj; renderCalendar(); };
         calDays.appendChild(btn);
       }
     }
-    prevCal.addEventListener('click', () => {
-      currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar();
-    });
-    nextCal.addEventListener('click', () => {
-      currentMonth++; if (currentMonth > 11) { currentMonth = 0; currentYear++; } renderCalendar();
-    });
+    prevCal.addEventListener('click',()=>{ currentMonth--; if(currentMonth<0){currentMonth=11;currentYear--;} renderCalendar(); });
+    nextCal.addEventListener('click',()=>{ currentMonth++; if(currentMonth>11){currentMonth=0;currentYear++;} renderCalendar(); });
 
-    function statusPill(status) {
-      const span = document.createElement('span');
-      span.className = `pill-status ${statusClass(status)}`;
-      span.textContent = status;
-      return span;
-    }
-    function statusClass(status) {
-      if (status === 'aprobada') return 'pill-aprobada';
-      if (status === 'rechazada') return 'pill-rechazada';
-      return 'pill-pendiente';
-    }
+    // ===== Pills =====
+    function statusPill(status){ const span=document.createElement('span'); span.className=`pill-status ${statusClass(status)}`; span.textContent=status; return span; }
+    function statusClass(status){ if(status==='aprobada') return 'pill-aprobada'; if(status==='rechazada') return 'pill-rechazada'; return 'pill-pendiente'; }
 
-    function renderIncidencias() {
-      listIncidencias.innerHTML = '';
-      if (!incidencias.length) {
-        listIncidencias.innerHTML = '<p class="text-sm text-gray-500">A&uacute;n no tienes incidencias reportadas.</p>';
-        return;
-      }
-      incidencias.sort((a, b) => new Date(b.date) - new Date(a.date));
-      incidencias.forEach(item => {
-        const wrap = document.createElement('div');
-        wrap.className = 'card flex flex-col gap-1';
-        const top = document.createElement('div');
-        top.className = 'flex items-center gap-2';
-        const icon = document.createElement('span');
-        icon.className = 'h-9 w-9 rounded-xl bg-[#ffeadd] text-[#ca5a0c] flex items-center justify-center';
-        icon.innerHTML = '<i class="fa-regular fa-clock"></i>';
+    // ===== Render incidencias =====
+    function renderIncidencias(){
+      listIncidencias.innerHTML='';
+      if(!incidencias.length){ listIncidencias.innerHTML='<p class="text-sm text-gray-500 dark:text-gray-400">Aún no tienes incidencias reportadas.</p>'; return; }
+      incidencias.sort((a,b)=>new Date(b.date)-new Date(a.date));
+      incidencias.forEach(item=>{
+        const wrap=document.createElement('div'); wrap.className='card flex flex-col gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700';
+        const top=document.createElement('div'); top.className='flex items-center gap-2';
+        const icon=document.createElement('span'); icon.className='h-9 w-9 rounded-xl bg-[#ffeadd] text-[#ca5a0c] flex items-center justify-center'; icon.innerHTML='<i class="fa-regular fa-clock"></i>';
         top.appendChild(icon);
-        const info = document.createElement('div');
-        info.className = 'flex items-center gap-2 flex-wrap';
-        const title = document.createElement('span');
-        title.className = 'font-semibold';
-        title.textContent = item.type;
-        info.appendChild(title);
-        info.appendChild(statusPill(item.status));
-        top.appendChild(info);
-        wrap.appendChild(top);
-
-        const date = document.createElement('div');
-        date.className = 'text-sm text-gray-500';
-        date.textContent = new Date(item.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        wrap.appendChild(date);
-
-        if (item.description) {
-          const desc = document.createElement('div');
-          desc.className = 'text-sm text-gray-700 mt-1';
-          desc.textContent = item.description;
-          wrap.appendChild(desc);
-        }
+        const info=document.createElement('div'); info.className='flex items-center gap-2 flex-wrap';
+        const title=document.createElement('span'); title.className='font-semibold'; title.textContent=item.type;
+        info.appendChild(title); info.appendChild(statusPill(item.status)); top.appendChild(info); wrap.appendChild(top);
+        const date=document.createElement('div'); date.className='text-sm text-gray-500 dark:text-gray-400'; date.textContent=new Date(item.date).toLocaleDateString('es-ES',{ weekday:'long', day:'numeric', month:'long', year:'numeric' }); wrap.appendChild(date);
+        if(item.description){ const desc=document.createElement('div'); desc.className='text-sm text-gray-700 dark:text-gray-300 mt-1'; desc.textContent=item.description; wrap.appendChild(desc); }
         listIncidencias.appendChild(wrap);
       });
       updateCounters();
     }
 
-    function updateCounters() {
-      const counts = { pendiente: 0, aprobada: 0, rechazada: 0 };
-      incidencias.forEach(i => { counts[i.status] = (counts[i.status] || 0) + 1; });
-      document.getElementById('countPendiente').textContent = counts.pendiente || 0;
-      document.getElementById('countAprobada').textContent = counts.aprobada || 0;
-      document.getElementById('countRechazada').textContent = counts.rechazada || 0;
+    function updateCounters(){
+      const counts={pendiente:0, aprobada:0, rechazada:0};
+      incidencias.forEach(i=>{ counts[i.status]=(counts[i.status]||0)+1; });
+      document.getElementById('countPendiente').textContent=counts.pendiente||0;
+      document.getElementById('countAprobada').textContent=counts.aprobada||0;
+      document.getElementById('countRechazada').textContent=counts.rechazada||0;
     }
 
-    function saveIncidencia() {
-      const type = typeSelected.textContent;
-      const description = descInput.value.trim();
-      const newInc = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Date.now(),
-        type,
-        date: selectedDate.toISOString(),
-        description,
-        status: 'pendiente'
-      };
-      incidencias.push(newInc);
-      saveIncidencias(incidencias);
-      renderIncidencias();
-      toggleModal(false);
+    function saveIncidencia(){
+      const type=typeSelected.textContent;
+      const description=descInput.value.trim();
+      const newInc={id:crypto.randomUUID?crypto.randomUUID():Date.now(),type,date:selectedDate.toISOString(),description,status:'pendiente'};
+      incidencias.push(newInc); saveIncidencias(incidencias); renderIncidencias(); toggleModal(false);
     }
 
-    document.getElementById('btnNew').addEventListener('click', () => toggleModal(true));
+    document.getElementById('btnNew').addEventListener('click',()=>toggleModal(true));
+    document.addEventListener('DOMContentLoaded',()=>{ renderCalendar(); renderIncidencias(); updateCounters(); });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      renderCalendar();
-      renderIncidencias();
-      updateCounters();
-    });
-
-    const backBtn = document.getElementById("btnBack");
-
-backBtn.addEventListener("click", () => {
-    const role = localStorage.getItem("userRole") || "user";
-    let target = "../pages/usuario.html";
-
-    if (role === "admin")  target = "../pages/admin.html";
-    if (role === "rrhh")   target = "../pages/rrhh.html";
-
-    window.location.href = target;
-});
-
-
+    const backBtn=document.getElementById("btnBack");
+    backBtn.addEventListener("click",()=>{ const role=localStorage.getItem("userRole")||"user"; let target="../pages/usuario.html"; if(role==="admin") target="../pages/admin.html"; if(role==="rrhh") target="../pages/rrhh.html"; window.location.href=target; });
   </script>
 </body>
 </html>

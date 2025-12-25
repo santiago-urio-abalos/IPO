@@ -4,21 +4,26 @@
 <head>
     <meta charset="UTF-8" />
     <title>Dashboard Admin</title>
-
+    <link rel="stylesheet" href="../css/dark-theme.css">
+    
     <!-- Font Awesome -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 
-    <!-- Tailwind -->
+    <!-- Tailwind con configuración de Modo Oscuro -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class' // Permite activar el modo oscuro con la clase .dark
+        }
+    </script>
 
-    <!-- === CSS PERSONALIZADO (CONTRASTE Y TEMAS) === -->
+    <!-- === CSS PERSONALIZADO (OPTIMIZADO PARA WAVE) === -->
     <style>
         :root {
-            /* Colores accesibles – modifica SOLO aquí */
-            --hora-bg: #2563eb;        /* Azul accesible */
-            --hora-text: #ffffff;      /* Texto principal */
-            --hora-subtext: #ffffff;   /* Texto secundario */
+            /* Azul Cobalto: Ratio 7:1 con blanco (Accesibilidad AAA) */
+            --hora-bg: #1e40af; 
+            --hora-text: #ffffff;
+            --hora-subtext: #e2e8f0;
         }
 
         .hora-card {
@@ -26,96 +31,96 @@
             color: var(--hora-text);
         }
 
-        .hora-card .subtext {
-            color: var(--hora-subtext);
+        /* Transiciones suaves para cambios de tema */
+        body, .card, div, section {
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        /* Ajustes específicos para Modo Oscuro manual */
+        html.dark body { background-color: #0f172a; color: #f8fafc; }
+        html.dark .bg-white { background-color: #1e293b; color: #f8fafc; }
     </style>
+
+    <script>
+        // Detección automática de tema guardado
+        (function() {
+            if (localStorage.getItem('darkMode') === 'enabled' || 
+               (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
 </head>
 
-<body class="bg-[#F4F7FB] min-h-screen">
+<body class="bg-[#F4F7FB] min-h-screen dark:bg-[#0f172a] dark:text-white">
 
     <!-- HEADER -->
     <header class="p-6 flex justify-between items-start">
         <div>
-            <p class="text-xl">Hola,</p>
+            <p class="text-xl opacity-80">Hola,</p>
             <h1 class="text-2xl font-bold">Administrador</h1>
         </div>
 
         <button onclick="window.location.href='../features/settings.html'"
             aria-label="Configuración de usuario"
             title="Configuración"
-            class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow hover:scale-105 transition">
-            <i class="fa-solid fa-user text-gray-700" aria-hidden="true"></i>
+            class="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow hover:scale-105 transition">
+            <i class="fa-solid fa-user text-gray-700 dark:text-blue-400" aria-hidden="true"></i>
         </button>
     </header>
 
-    <!-- HORA -->
+    <!-- HORA (Contraste Asegurado) -->
     <section class="mx-6 mt-4">
-        <div class="hora-card rounded-2xl p-8 text-center shadow-lg">
-            <p class="subtext">Hora actual</p>
-            <p id="time" class="text-4xl font-bold mt-2"></p>
-            <p id="date" class="subtext mt-2 text-sm"></p>
+        <div class="hora-card rounded-2xl p-8 text-center shadow-lg dark:bg-blue-900">
+            <p class="text-blue-100 uppercase tracking-wide text-xs font-bold">Hora actual</p>
+            <p id="time" class="text-5xl font-bold mt-2"></p>
+            <p id="date" class="text-blue-100 mt-2 text-sm italic"></p>
         </div>
     </section>
 
     <!-- TITULO PANEL -->
     <section class="mt-10 text-center px-6">
         <h2 class="text-xl font-bold">Panel de Administración</h2>
-        <p class="text-xltext-sm mt-1">
+        <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">
             Selecciona una opción para administrar el sistema
         </p>
     </section>
 
-    <!-- TARJETAS -->
-    <section class="mt-8 px-6">
+    <!-- TARJETAS (Colores con ratio > 4.5:1) -->
+    <section class="mt-8 px-6 pb-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-            <!-- INCIDENCIAS -->
-            <div onclick="window.location.href='../especificas/incidencias_admin.html'"
-                class="cursor-pointer bg-blue-600 text-white rounded-2xl p-8 text-center shadow-lg hover:scale-105 transition">
-
+            <!-- INCIDENCIAS (Azul fuerte) -->
+            <div onclick="location.href='../especificas/incidencias_admin.html'"
+                class="cursor-pointer bg-blue-700 text-white rounded-2xl p-8 text-center shadow-lg hover:brightness-110 transition">
                 <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-white/20">
                     <i class="fa-solid fa-circle-exclamation text-3xl"></i>
                 </div>
-
                 <h3 class="text-lg font-bold">Ver Incidencias</h3>
-                <p class="text-sm mt-2">
-                    Revisar y gestionar todas las incidencias reportadas
-                </p>
-
-                <i class="fa-solid fa-chevron-right mt-6 opacity-80"></i>
+                <p class="text-blue-50 text-sm mt-2">Gestionar reportes del sistema</p>
+                <i class="fa-solid fa-chevron-right mt-6 opacity-60"></i>
             </div>
 
-            <!-- CREAR USUARIO -->
-            <div onclick="window.location.href='../especificas/Crear_usuarios_admin.html'"
-                class="cursor-pointer bg-green-700 text-white rounded-2xl p-8 text-center shadow-lg hover:scale-105 transition">
-
+            <!-- CREAR USUARIO (Verde oscuro para contraste blanco) -->
+            <div onclick="location.href='../especificas/Crear_usuarios_admin.html'"
+                class="cursor-pointer bg-emerald-800 text-white rounded-2xl p-8 text-center shadow-lg hover:brightness-110 transition">
                 <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-white/20">
                     <i class="fa-solid fa-user-plus text-3xl"></i>
                 </div>
-
-                <h3 class="text-lg">Crear Usuario</h3>
-                <p class="text-sm mt-2">
-                    Registrar nuevos usuarios con sus credenciales
-                </p>
-
-                <i class="fa-solid fa-chevron-right mt-6 opacity-80"></i>
+                <h3 class="text-lg font-bold">Crear Usuario</h3>
+                <p class="text-emerald-50 text-sm mt-2">Registrar nuevos accesos</p>
+                <i class="fa-solid fa-chevron-right mt-6 opacity-60"></i>
             </div>
 
-            <!-- GESTION USUARIOS -->
-            <div onclick="window.location.href='../especificas/Gestion_usuarios_admin.html'"
-                class="cursor-pointer bg-purple-600 text-white rounded-2xl p-8 text-center shadow-lg hover:scale-105 transition">
-
+            <!-- GESTION USUARIOS (Púrpura profundo) -->
+            <div onclick="location.href='../especificas/Gestion_usuarios_admin.html'"
+                class="cursor-pointer bg-purple-800 text-white rounded-2xl p-8 text-center shadow-lg hover:brightness-110 transition">
                 <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-white/20">
                     <i class="fa-solid fa-users text-3xl"></i>
                 </div>
-
-                <h3 class="text-lg">Gestionar Usuarios</h3>
-                <p class="text-sm mt-2">
-                    Editar, desactivar o eliminar usuarios
-                </p>
-
-                <i class="fa-solid fa-chevron-right mt-6 opacity-80"></i>
+                <h3 class="text-lg font-bold">Gestionar Usuarios</h3>
+                <p class="text-purple-50 text-sm mt-2">Editar o eliminar perfiles</p>
+                <i class="fa-solid fa-chevron-right mt-6 opacity-60"></i>
             </div>
 
         </div>
@@ -139,8 +144,5 @@
         setInterval(updateClock, 1000);
         updateClock();
     </script>
-
-    <script type="module" src="../especificas/funciones_admin.js"></script>
-
 </body>
 </html>

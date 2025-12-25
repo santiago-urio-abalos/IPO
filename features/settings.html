@@ -1,22 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
+    <!-- ===== APLICAR TEMA ANTES DE RENDER (ANTI-FLASH) ===== -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem("darkMode") === "enabled") {
+                    document.documentElement.classList.add("dark");
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <!-- ===== FONDO BASE (CLARO / OSCURO) ===== -->
+    <style>
+        html {
+            background-color: #F4F7FB;
+        }
+        html.dark {
+            background-color: #111827;
+        }
+    </style>
+
     <meta charset="UTF-8">
     <title>Perfil y configuración</title>
 
+    <!-- ===== CSS DARK MODE GLOBAL ===== -->
+    <link rel="stylesheet" href="../css/dark-mode.css">
+
+    <!-- ===== TAILWIND ===== -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ===== FONT AWESOME ===== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
+        /* ===== CONTENEDOR ===== */
+        .main-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        html:not(.dark) .main-container {
+            background-color: #F4F7FB;
+            color: #1f2937;
+        }
+
+        html.dark .main-container {
+            background-color: #111827;
+            color: #ffffff;
+        }
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            background: #ffffff;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        html.dark .topbar {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        .topbar svg {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            fill: currentColor;
+        }
+
+        /* ===== USUARIO ===== */
         .user-card { display: flex; align-items: center; gap: 14px; }
-        .user-avatar { width: 55px; height: 55px; background: #2563eb; color: #fff; border-radius: 50%; display: flex; font-size: 24px; align-items: center; justify-content: center; }
-        .user-name { margin: 0; font-size: 18px; font-weight: 600; }
-        .user-email { margin: 0; color: #374151; }
-        .settings-section { margin-top: 32px; padding-bottom: 14px; border-bottom: 1px solid #e5e7eb; }
-        .section-desc { color: #4b5563; margin-top: 4px; }
+        .user-avatar {
+            width: 55px;
+            height: 55px;
+            background: #2563eb;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            font-size: 24px;
+            align-items: center;
+            justify-content: center;
+        }
 
-        /* ------------------------- SWITCH ACCESIBLE PERFECTO ------------------------- */
+        /* ===== SECCIONES ===== */
+        .settings-section {
+            margin-top: 32px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
+        html.dark .settings-section {
+            border-color: #374151;
+        }
+
+        /* ===== SWITCH ===== */
         .setting-item {
             display: flex;
             justify-content: space-between;
@@ -32,17 +116,12 @@
             cursor: pointer;
         }
 
-        .switch-text {
-            font-size: 16px;
-        }
-
         .switch-wrapper {
             position: relative;
             width: 46px;
             height: 24px;
         }
 
-        /* Checkbox invisible pero clicable */
         .switch-wrapper input {
             position: absolute;
             width: 46px;
@@ -53,7 +132,6 @@
             margin: 0;
         }
 
-        /* Slider visible */
         .switch-wrapper .slider {
             position: absolute;
             top: 0;
@@ -63,7 +141,6 @@
             background: #ccc;
             border-radius: 24px;
             transition: .3s;
-            z-index: 1;
         }
 
         .switch-wrapper .slider::before {
@@ -86,99 +163,124 @@
             transform: translateX(22px);
         }
 
-        /* -------------------------------------------------------------------------------- */
+        /* ===== SELECT ===== */
+        html.dark select {
+            background-color: #1f2937;
+            color: #ffffff;
+            border-color: #374151;
+        }
 
-        .logout-btn { width: 100%; background: #dc2626; color: white; border: none; padding: 12px; margin-top: 30px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .topbar { background: #ffffff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .topbar img { width: 24px; height: auto; cursor: pointer; }
+        /* ===== LOGOUT ===== */
+        .logout-btn {
+            width: 100%;
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 12px;
+            margin-top: 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        html.dark .logout-btn {
+            background-color: #b91c1c;
+        }
     </style>
 </head>
 
-<body class="bg-[#F4F7FB] min-h-screen">
+<body>
 
-<div class="topbar">
-    <img src="https://cdn-icons-png.flaticon.com/512/271/271218.png"
-         alt="Volver al tablero"
-         id="btnBack">
-    <h1 class="text-lg font-semibold">Perfil y configuración</h1>
+<div class="main-container">
+
+    <div class="topbar">
+        <svg id="btnBack" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        <h1>Perfil y configuración</h1>
+    </div>
+
+    <div class="p-6">
+
+        <div class="settings-section user-card">
+            <div class="user-avatar">U</div>
+            <div>
+                <h3 class="user-name"></h3>
+                <p class="user-email"></p>
+            </div>
+        </div>
+
+        <!-- Preferencias -->
+        <div class="settings-section">
+            <h3 class="font-semibold">Preferencias</h3>
+            <p class="section-desc">Personaliza tu experiencia</p>
+
+            <div class="setting-item">
+                <label class="switch-full">
+                    <span class="switch-text">Idioma</span>
+                    <select id="languageSelect" class="border rounded px-2 py-1 text-sm ml-4">
+                        <option>Español</option>
+                        <option>Inglés</option>
+                        <option>Francés</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <label class="switch-full">
+                    <span class="switch-text">Tema oscuro</span>
+                    <div class="switch-wrapper">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div class="settings-section">
+            <h3 class="font-semibold">Notificaciones</h3>
+            <p class="section-desc">Configura alertas y recordatorios</p>
+
+            <div class="setting-item">
+                <label class="switch-full">
+                    <span class="switch-text">Notificaciones push</span>
+                    <div class="switch-wrapper">
+                        <input type="checkbox" id="pushNotifications">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <label class="switch-full">
+                    <span class="switch-text">Recordatorios de fichaje</span>
+                    <div class="switch-wrapper">
+                        <input type="checkbox" id="clockInReminders">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="setting-item">
+                <label class="switch-full">
+                    <span class="switch-text">Vibración al fichar</span>
+                    <div class="switch-wrapper">
+                        <input type="checkbox" id="vibrationOnClockIn">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <button class="logout-btn" id="logoutBtn">Cerrar sesión</button>
+    </div>
 </div>
 
-<div class="p-6">
-    <div class="settings-section user-card">
-        <div class="user-avatar" aria-hidden="true">U</div>
-        <div>
-            <h3 class="user-name"></h3>
-            <p class="user-email"></p>
-        </div>
-    </div>
+<!-- ===== DARK MODE (TOGGLE + GLOBAL) ===== -->
+<script src="../js/dark-mode.js" type="module"></script>
 
-    <!-- Preferencias -->
-    <div class="settings-section">
-        <h3 class="font-semibold">Preferencias</h3>
-        <p class="section-desc">Personaliza tu experiencia</p>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Idioma</span>
-                <select id="languageSelect" class="border rounded px-2 py-1 text-sm ml-4">
-                    <option>Español</option>
-                    <option>Inglés</option>
-                    <option>Francés</option>
-                </select>
-            </label>
-        </div>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Tema oscuro</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="darkModeToggle">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-
-    </div>
-
-    <!-- Notificaciones -->
-    <div class="settings-section">
-        <h3 class="font-semibold">Notificaciones</h3>
-        <p class="section-desc">Configura alertas y recordatorios</p>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Notificaciones push</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="pushNotifications">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Recordatorios de fichaje</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="clockInReminders">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-
-        <div class="setting-item">
-            <label class="switch-full">
-                <span class="switch-text">Vibración al fichar</span>
-                <div class="switch-wrapper">
-                    <input type="checkbox" id="vibrationOnClockIn">
-                    <span class="slider"></span>
-                </div>
-            </label>
-        </div>
-    </div>
-
-    <button class="logout-btn" id="logoutBtn">Cerrar sesión</button>
-</div>
-
+<!-- ===== FIREBASE + NAVEGACIÓN (ORIGINAL, SIN TOCAR) ===== -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -189,8 +291,7 @@
         projectId: "click-df584",
         storageBucket: "click-df584.firebasestorage.app",
         messagingSenderId: "410988732262",
-        appId: "1:410988732262:web:0531fd4ed3bdc01fa2f2a7",
-        measurementId: "G-2VZB7X7HCR"
+        appId: "1:410988732262:web:0531fd4ed3bdc01fa2f2a7"
     };
 
     const app  = initializeApp(firebaseConfig);
@@ -214,19 +315,13 @@
         window.location.href = "../pages/index.html";
     });
 
-    // Botón regresar según ROL
-    const backBtn = document.getElementById("btnBack");
-
-    backBtn.addEventListener("click", () => {
+    document.getElementById("btnBack").addEventListener("click", () => {
         const role = localStorage.getItem("userRole") || "user";
-        let target = "../pages/usuario.html";
-
-        if (role === "admin")  target = "../pages/admin.html";
-        if (role === "rrhh")   target = "../pages/rrhh.html";
-
-        window.location.href = target;
+        window.location.href =
+            role === "admin" ? "../pages/admin.html" :
+            role === "rrhh"  ? "../pages/rrhh.html" :
+                               "../pages/usuario.html";
     });
-
 </script>
 
 </body>

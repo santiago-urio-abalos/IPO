@@ -1,0 +1,69 @@
+/* ===== TEMA OSCURO GLOBAL ===== */
+
+body.dark {
+    background-color: #111827;
+    color: #ffffff;
+}
+
+/* Contenedor principal */
+body.dark .main-container,
+body.dark .max-w-xl {
+    background-color: #111827 !important;
+    color: #ffffff;
+}
+
+/* Topbar */
+body.dark .topbar {
+    background-color: #0f172a;
+    color: #ffffff;
+}
+
+body.dark .topbar svg {
+    fill: #ffffff;
+}
+
+/* Textos */
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark p,
+body.dark span,
+body.dark label {
+    color: #ffffff;
+}
+
+/* Secciones */
+body.dark .settings-section {
+    border-color: #374151;
+}
+
+/* Inputs / selects */
+body.dark select {
+    background-color: #1f2937;
+    color: #ffffff;
+    border-color: #374151;
+}
+
+/* Tarjetas (usuario.html) */
+body.dark .bg-white {
+    background-color: #1f2937 !important;
+}
+
+/* Textos grises de Tailwind */
+body.dark .text-gray-500 {
+    color: #9ca3af !important;
+}
+
+/* Botón logout */
+body.dark .logout-btn {
+    background-color: #b91c1c;
+}
+.profile-icon {
+    font-size: 34px;
+    color: #111827;
+}
+
+body.dark .profile-icon {
+    color: #ffffff;
+}
+

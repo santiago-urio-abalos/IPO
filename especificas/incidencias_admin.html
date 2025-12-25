@@ -1,132 +1,130 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestión de Incidencias</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Incidencias</title>
+    <link rel="stylesheet" href="../css/dark-theme.css">
 
-<style>
-* { box-sizing:border-box; font-family:Segoe UI, Arial, sans-serif; }
-body { margin:0; padding:24px; background:#f4f6fb; }
+    <style>
+        :root {
+            --bg-body: #f4f6fb;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #4b5563;
+            --border: #d1d5db;
+            /* Colores optimizados para contraste WCAG AA con texto blanco o muy oscuro */
+            --pending-bg: #fef3c7; --pending-text: #92400e; 
+            --resolved-bg: #d1fae5; --resolved-text: #065f46; 
+            --blocked-bg: #fee2e2;  --blocked-text: #991b1b;  
+        }
 
-/* HEADER */
-.header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
+        html.dark {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f9fafb;
+            --text-sub: #9ca3af;
+            --border: #334155;
+            --pending-bg: #451a03; --pending-text: #fcd34d;
+            --resolved-bg: #064e3b; --resolved-text: #6ee7b7;
+            --blocked-bg: #450a0a;  --blocked-text: #fca5a5;
+        }
 
-.header a {
-  text-decoration: none;
-  font-size: 22px;
-  color: #374151;
-}
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { margin: 0; padding: 24px; background: var(--bg-body); color: var(--text-main); transition: 0.3s; }
 
-.header h1 {
-  font-size: 22px;
-  margin: 0;
-}
+        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .header a { text-decoration: none; font-size: 24px; color: var(--text-main); }
+        .subtitle { color: var(--text-sub); font-size: 14px; }
 
-.subtitle {
-  color: #000000;
-  font-size: 14px;
-}
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .summary-card { background: var(--bg-card); padding: 16px; border-radius: 12px; display: flex; gap: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+        
+        .icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .pending { background: var(--pending-bg); color: var(--pending-text); }
+        .resolved { background: var(--resolved-bg); color: var(--resolved-text); }
+        .blocked { background: var(--blocked-bg); color: var(--blocked-text); }
 
-/* SUMMARY */
-.summary { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
-.summary-card { background:#fff; padding:16px; border-radius:12px; display:flex; gap:12px; box-shadow:0 2px 6px rgba(0,0,0,.06); }
-.icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-.pending{background:#fff3cd;color:#996100}
-.resolved{background:#d1fae5;color:#006b47}
-.blocked{background:#fee2e2;color:#d10000}
+        .filters { background: var(--bg-card); padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
+        select { padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); }
 
-/* FILTERS */
-.filters{background:#fff;padding:16px;border-radius:12px;display:flex;justify-content:space-between;margin-bottom:20px}
-select{padding:8px 12px;border-radius:8px;border:1px solid #d1d5db}
+        .incident { background: var(--bg-card); border-radius: 12px; padding: 16px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+        .incident-left { display: flex; gap: 14px; }
+        .incident-icon { width: 42px; height: 42px; border-radius: 50%; background: #eef2ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        html.dark .incident-icon { background: #312e81; color: #c7d2fe; }
 
-/* INCIDENT */
-.incident{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;display:flex;justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,.06)}
-.incident-left{display:flex;gap:14px}
-.incident-icon{width:42px;height:42px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center}
-.badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
-.details-btn{border:1px solid #d1d5db;background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
-
-/* MODAL */
-.modal-backdrop{
-  position:fixed; inset:0; background:rgba(0,0,0,.4);
-  display:none; align-items:center; justify-content:center;
-}
-.modal{
-  background:#fff; width:420px; border-radius:14px; padding:20px;
-}
-.modal h3{margin-top:0}
-.modal p{font-size:14px;color:#4b5563}
-.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
-.btn{padding:8px 14px;border-radius:8px;border:1px solid #d1d5db;cursor:pointer}
-.btn.primary{background:#2563eb;color:#fff;border:none}
-</style>
+        .badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; margin-left: 8px; }
+        .details-btn { border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+        
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { background: var(--bg-card); width: 420px; border-radius: 14px; padding: 24px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: var(--bg-card); color: var(--text-main); }
+        .btn.primary { background: #2563eb; color: #fff; border: none; }
+        
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
 </head>
 
 <body>
 
 <div class="header">
-  <a href="../pages/admin.html">←</a>
-  <div>
-    <h1>Gestión de Incidencias</h1>
-    <div class="subtitle">Revisar y gestionar incidencias reportadas</div>
-  </div>
+    <a href="../pages/admin.html" aria-label="Volver atrás">←</a>
+    <div>
+        <h1>Gestión de Incidencias</h1>
+        <div class="subtitle">Revisar y gestionar incidencias reportadas</div>
+    </div>
 </div>
 
+<section class="summary">
+    <div class="summary-card"><div class="icon pending">⏱</div><div>Pendientes<br><strong id="cp">0</strong></div></div>
+    <div class="summary-card"><div class="icon resolved">✔</div><div>Resueltas<br><strong id="cr">0</strong></div></div>
+    <div class="summary-card"><div class="icon blocked">✖</div><div>Bloqueadas<br><strong id="cb">0</strong></div></div>
+</section>
 
-<div class="summary">
-  <div class="summary-card"><div class="icon pending">⏱</div><div>Pendientes<br><strong id="cp">0</strong></div></div>
-  <div class="summary-card"><div class="icon resolved">✔</div><div>Resueltas<br><strong id="cr">0</strong></div></div>
-  <div class="summary-card"><div class="icon blocked">✖</div><div>Bloqueadas<br><strong id="cb">0</strong></div></div>
-</div>
-
-<div class="filters">
-  <select id="stateFilter">
-    <option value="all">Todos los estados</option>
-    <option value="pending">Pendiente</option>
-    <option value="resolved">Resuelta</option>
-    <option value="blocked">Bloqueada</option>
-  </select>
-
-  <select id="dateFilter">
-    <option value="today">Hoy</option>
-    <option value="week">Esta semana</option>
-    <option value="month">Este mes</option>
-    <option value="all">Histórico</option>
-  </select>
-</div>
-
-<div id="incidents"></div>
-
-<!-- MODAL -->
-<div class="modal-backdrop" id="modal">
-  <div class="modal">
-    <h3>Detalles de la Incidencia</h3>
-    <p><strong id="mEmail"></strong></p>
-    <p id="mType"></p>
-    <p id="mDate"></p>
-    <p id="mComment"></p>
-
-    <label>Estado</label>
-    <select id="mState">
-      <option value="pending">Pendiente</option>
-      <option value="resolved">Resuelta</option>
-      <option value="blocked">Bloqueada</option>
+<nav class="filters">
+    <label for="stateFilter" class="sr-only">Filtrar por estado</label>
+    <select id="stateFilter">
+        <option value="all">Todos los estados</option>
+        <option value="pending">Pendiente</option>
+        <option value="resolved">Resuelta</option>
+        <option value="blocked">Bloqueada</option>
     </select>
 
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Cancelar</button>
-      <button class="btn primary" onclick="saveModal()">Guardar cambios</button>
+    <label for="dateFilter" class="sr-only">Filtrar por fecha</label>
+    <select id="dateFilter">
+        <option value="all">Histórico</option>
+        <option value="today">Hoy</option>
+        <option value="week">Esta semana</option>
+        <option value="month">Este mes</option>
+    </select>
+</nav>
+
+<main id="incidents"></main>
+
+<div class="modal-backdrop" id="modal">
+    <div class="modal">
+        <h3 id="mType">Detalles</h3>
+        <p><strong id="mEmail"></strong></p>
+        <p id="mDate" class="subtitle"></p>
+        <p id="mComment" style="margin: 15px 0; border-left: 3px solid var(--border); padding-left: 10px;"></p>
+
+        <label for="mState" style="font-weight: bold; display: block; margin-bottom: 5px;">Estado:</label>
+        <select id="mState" style="width: 100%;">
+            <option value="pending">Pendiente</option>
+            <option value="resolved">Resuelta</option>
+            <option value="blocked">Bloqueada</option>
+        </select>
+
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+            <button class="btn primary" onclick="saveModal()">Guardar cambios</button>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
+// DATOS ORIGINALES
 const data = [
   {email:"juan.garcia@empresa.com",type:"Olvido de fichaje",date:"2024-11-18T09:30",state:"pending",comment:"Olvidé fichar la entrada esta mañana."},
   {email:"maria.lopez@empresa.com",type:"Error de fichaje",date:new Date().toISOString(),state:"resolved",comment:"Salida marcada como pausa."},
@@ -139,32 +137,32 @@ const data = [
 
 function daysAgo(d){ const dt=new Date(); dt.setDate(dt.getDate()-d); return dt.toISOString(); }
 
-const container=document.getElementById("incidents");
-let current=null;
+const container = document.getElementById("incidents");
+const cpEl = document.getElementById("cp"), crEl = document.getElementById("cr"), cbEl = document.getElementById("cb");
+let current = null;
 
 function render(){
-  container.innerHTML="";
-  let cp=0,cr=0,cb=0;
+  container.innerHTML = "";
+  let cp=0, cr=0, cb=0;
 
-  data.forEach((i,idx)=>{
-    if(i.state==="pending")cp++;
-    if(i.state==="resolved")cr++;
-    if(i.state==="blocked")cb++;
+  data.forEach((i, idx) => {
+    if(i.state==="pending") cp++;
+    if(i.state==="resolved") cr++;
+    if(i.state==="blocked") cb++;
 
-    const el=document.createElement("div");
-    el.className="incident";
-    el.dataset.idx=idx;
-    el.dataset.state=i.state;
-    el.dataset.date=i.date;
+    const el = document.createElement("div");
+    el.className = "incident";
+    el.dataset.state = i.state;
+    el.dataset.date = i.date;
 
-    el.innerHTML=`
+    el.innerHTML = `
       <div class="incident-left">
-        <div class="incident-icon">!</div>
+        <div class="incident-icon" aria-hidden="true">!</div>
         <div>
           <strong>${i.type}</strong>
           <span class="badge ${i.state}">${label(i.state)}</span>
-          <p>${i.email}</p>
-          <p>${new Date(i.date).toLocaleString()}</p>
+          <p class="subtitle" style="margin:4px 0">${i.email}</p>
+          <p class="subtitle" style="font-size:12px">${new Date(i.date).toLocaleString()}</p>
         </div>
       </div>
       <button class="details-btn" onclick="openModal(${idx})">Ver detalles</button>
@@ -172,51 +170,47 @@ function render(){
     container.appendChild(el);
   });
 
-  cpEl.textContent=cp; crEl.textContent=cr; cbEl.textContent=cb;
+  cpEl.textContent = cp; crEl.textContent = cr; cbEl.textContent = cb;
   applyFilters();
 }
 
-function label(s){return s==="pending"?"Pendiente":s==="resolved"?"Resuelta":"Bloqueada";}
+function label(s){ return s==="pending"?"Pendiente":s==="resolved"?"Resuelta":"Bloqueada"; }
 
 function openModal(idx){
-  current=idx;
-  const i=data[idx];
-  mEmail.textContent=i.email;
-  mType.textContent=i.type;
-  mDate.textContent=new Date(i.date).toLocaleString();
-  mComment.textContent=i.comment;
-  mState.value=i.state;
-  modal.style.display="flex";
+  current = idx;
+  const i = data[idx];
+  document.getElementById("mEmail").textContent = i.email;
+  document.getElementById("mType").textContent = i.type;
+  document.getElementById("mDate").textContent = new Date(i.date).toLocaleString();
+  document.getElementById("mComment").textContent = i.comment;
+  document.getElementById("mState").value = i.state;
+  document.getElementById("modal").style.display = "flex";
 }
 
-function closeModal(){ modal.style.display="none"; }
+function closeModal(){ document.getElementById("modal").style.display = "none"; }
 
 function saveModal(){
-  data[current].state=mState.value;
+  data[current].state = document.getElementById("mState").value;
   closeModal();
   render();
 }
 
 function applyFilters(){
-  const s=stateFilter.value;
-  const d=dateFilter.value;
-  document.querySelectorAll(".incident").forEach(el=>{
-    const diff=(new Date()-new Date(el.dataset.date))/86400000;
-    const okState=s==="all"||el.dataset.state===s;
-    const okDate=d==="all"||(d==="today"&&diff<1)||(d==="week"&&diff<=7)||(d==="month"&&diff<=30);
-    el.style.display=(okState&&okDate)?"":"none";
+  const s = document.getElementById("stateFilter").value;
+  const d = document.getElementById("dateFilter").value;
+  document.querySelectorAll(".incident").forEach(el => {
+    const diff = (new Date() - new Date(el.dataset.date))/86400000;
+    const okState = s === "all" || el.dataset.state === s;
+    const okDate = d === "all" || (d === "today" && diff < 1) || (d === "week" && diff <= 7) || (d === "month" && diff <= 30);
+    el.style.display = (okState && okDate) ? "flex" : "none";
   });
 }
 
-stateFilter.onchange=applyFilters;
-dateFilter.onchange=applyFilters;
-
-const cpEl=document.getElementById("cp");
-const crEl=document.getElementById("cr");
-const cbEl=document.getElementById("cb");
+document.getElementById("stateFilter").onchange = applyFilters;
+document.getElementById("dateFilter").onchange = applyFilters;
 
 render();
 </script>
-
+<script src="../js/dark-mode.js" type="module"></script>
 </body>
 </html>

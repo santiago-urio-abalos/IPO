@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+    (function () {
+      try {
+        if (localStorage.getItem("darkMode") === "enabled") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../css/dark-theme.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumen semanal</title>
@@ -20,6 +30,111 @@
     .bar { width: 36px; border-radius: 10px 10px 8px 8px; background: #c3d7f8; transition: height 0.2s ease; }
     .bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .bar-label { font-size: 12px; color: #6B7280; }
+    html.dark body {
+  background: #111827;
+  color: #f9fafb;
+}
+
+/* Cards */
+html.dark .card {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* Header button */
+html.dark #btnBack {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark #btnBack i {
+  color: #e5e7eb;
+}
+
+/* Textos secundarios */
+html.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+html.dark .subtle {
+  color: #9ca3af;
+}
+
+/* Timeline */
+html.dark .timeline-row:not(:last-child)::after {
+  background: #374151;
+}
+
+/* Pills */
+html.dark .pill {
+  background: #111827;
+  color: #d1d5db;
+  border-color: #374151;
+}
+
+/* Progress bar */
+html.dark .progress-shell {
+  background: #374151;
+}
+
+html.dark .progress-fill {
+  background: linear-gradient(90deg, #4b5563, #6b7280);
+}
+/* ===================== */
+/* AJUSTES DARK MODE */
+/* ===================== */
+
+/* Textos */
+html.dark .text-gray-500,
+html.dark .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+html.dark .text-gray-800 {
+  color: #f9fafb !important;
+}
+
+/* Pills día */
+html.dark .pill-day {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Lista diaria */
+html.dark #dailyList .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+/* Barras */
+html.dark .bar {
+  background: linear-gradient(180deg, #4b5563, #6b7280);
+}
+
+html.dark .bar-grid {
+  background: linear-gradient(to top, #374151 1px, transparent 1px);
+}
+
+/* Etiquetas debajo de barras */
+html.dark .bar-label {
+  color: #d1d5db;
+}
+
+/* Card headers secundarios */
+html.dark .stat-label {
+  color: #9ca3af;
+}
+
+/* Iconos estadísticos */
+html.dark .fa-arrow-trend-up {
+  color: #22c55e;
+}
+
+/* Botón Exportar (refuerzo contraste) */
+html.dark button {
+  color: #f9fafb;
+}
+
   </style>
 </head>
 <body class="min-h-screen">
@@ -31,13 +146,24 @@
         </button>
         <div>
           <h1 class="text-2xl font-bold">Resumen semanal</h1>
-          <p class="text-gray-500 text-sm">&Uacute;ltimos 7 d&iacute;as</p>
+          <p class="text-gray-600 text-sm">&Uacute;ltimos 7 d&iacute;as</p>
         </div>
       </div>
-      <button class="h-10 px-4 rounded-lg bg-white border border-gray-200 shadow text-sm font-semibold flex items-center gap-2 hover:bg-gray-50">
-        <i class="fa-solid fa-download text-gray-600"></i>
+      <button
+        class="h-10 px-4 rounded-lg
+              bg-dark dark:bg-gray-800
+              border border-gray-200 dark:border-gray-700
+              shadow
+              text-sm font-semibold
+              text-gray-800 dark:text-gray-100
+              flex items-center gap-2
+              hover:bg-gray-50 dark:hover:bg-gray-700">
+
+        <i class="fa-solid fa-download text-gray-600 dark:text-gray-300"></i>
         Exportar
       </button>
+
+
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
@@ -246,5 +372,7 @@
 
 
   </script>
+  <script src="../js/dark-mode.js" type="module"></script>
+
 </body>
 </html>

@@ -2,220 +2,201 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard Recursos Humanos</title>
+  <meta charset="UTF-8">
+  <title>Dashboard Recursos Humanos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Base (tema claro) */
+    body { background: #f3f4f6; color: #1f2937; }
+    header { background: #0f766e; color: #fff; }
+    .card { background: #fff; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    input, select { background: #fff; border: 1px solid #d1d5db; color: #1f2937; }
+    table thead { background: #e5e7eb; }
+    button { background: #e5e7eb; color: #1f2937; }
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Icons -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    /* Dark mode */
+    html.dark body { background: #0f172a; color: #f9fafb; }
+    html.dark header { background: #0f766e; color: #fff; }
+    html.dark .card { background: #1e293b; color: #f9fafb; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    html.dark input, html.dark select { background: #1e293b; border-color: #334155; color: #f9fafb; }
+    html.dark table thead { background: #334155; color: #f9fafb; }
+    html.dark button { background: #334155; color: #f9fafb; }
+    html.dark .bg-green-100 { background-color: #065f46 !important; color: #a7f3d0 !important; }
+    html.dark .bg-red-100 { background-color: #7f1d1d !important; color: #fecaca !important; }
+    .card, p, h2 {
+  transition: background-color 0.3s, color 0.3s;
+}
+  </style>
+    <script>
+    (function() {
+      try {
+        if (localStorage.getItem('darkMode') === 'enabled') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  <script>
+  tailwind.config = {
+    darkMode: 'class'
+  }
+</script>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="min-h-screen">
 
-    <!-- HEADER -->
-    <header class="bg-teal-700 text-white p-6 shadow flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold">Dashboard de Recursos Humanos</h1>
-            <p class="text-sm opacity-90">Control y seguimiento de fichajes</p>
-        </div>
+  <!-- HEADER -->
+  <header class="p-6 shadow flex justify-between items-center">
+    <div>
+      <h1 class="text-2xl font-bold">Dashboard de Recursos Humanos</h1>
+      <p class="text-sm opacity-90">Control y seguimiento de fichajes</p>
+    </div>
+    <button onclick="window.location.href='../features/settings.html'" aria-label="Abrir configuración de usuario" title="Configuración"
+      class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow hover:scale-105 transition">
+      <i class="fa-solid fa-user text-teal-700 dark:text-teal-300" aria-hidden="true"></i>
+    </button>
+  </header>
+  <!-- KPIs -->
+  <section class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6">
+    <div class="card p-5">
+      <p class="text-gray-500 dark:text-gray-300">Registros</p>
+      <h2 class="text-3xl font-bold" id="totalRegistros">0</h2>
+    </div>
+    <div class="card p-5">
+      <p class="text-gray-500 dark:text-gray-300">Fichados</p>
+      <h2 class="text-3xl font-bold text-green-600" id="fichados">0</h2>
+    </div>
+    <div class="card p-5">
+      <p class="text-gray-500 dark:text-gray-300">No fichados</p>
+      <h2 class="text-3xl font-bold text-red-600" id="noFichados">0</h2>
+    </div>
+    <div class="card p-5">
+      <p class="text-gray-500 dark:text-gray-300">Empleados únicos</p>
+      <h2 class="text-3xl font-bold" id="empleadosUnicos">0</h2>
+    </div>
+  </section>
+  <!-- FILTROS -->
+  <section class="card mx-6 p-6 mb-6">
+    <h2 class="text-xl font-bold mb-4">Filtros</h2>
+    <div class="flex flex-wrap gap-4">
+      <label for="filtroNombre" class="sr-only">Filtrar por empleado</label>
+      <input id="filtroNombre" type="text" placeholder="Empleado" class="border px-3 py-2 rounded-lg text-sm">
+      <label for="fechaInicio" class="sr-only">Fecha inicio</label>
+      <input id="fechaInicio" type="date" class="border px-3 py-2 rounded-lg text-sm">
+      <label for="fechaFin" class="sr-only">Fecha fin</label>
+      <input id="fechaFin" type="date" class="border px-3 py-2 rounded-lg text-sm">
+    </div>
+  </section>
 
-        <!-- ICONO PERFIL -->
-        <button
-            onclick="window.location.href='../features/settings.html'"
-            aria-label="Abrir configuración de usuario"
-            title="Configuración"
-            class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow hover:scale-105 transition">
+  <!-- TABLA -->
+  <section class="card mx-6 p-6 mb-6">
+    <h2 class="text-xl font-bold mb-4">Resultados</h2>
+    <table class="w-full text-sm">
+      <thead class="text-left">
+        <tr>
+          <th class="p-3">Nombre</th>
+          <th>Fecha</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="tablaResultados"></tbody>
+    </table>
+  </section>
 
-            <i class="fa-solid fa-user text-teal-700" aria-hidden="true"></i>
-        </button>
+  <!-- GRÁFICOS -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+    <div class="card p-6">
+      <h3 class="font-bold mb-4">Fichajes (Barras)</h3>
+      <canvas id="barChart"></canvas>
+    </div>
+    <div class="card p-6">
+      <h3 class="font-bold mb-4">Fichajes (Tarta)</h3>
+      <canvas id="pieChart"></canvas>
+    </div>
+  </section>
 
-    </header>
+  <script>
+    /* ===== DATOS SIMULADOS ===== */
+    const registros = [
+      { nombre: "Carlos Martínez", fecha: "2025-05-01", fichado: true },
+      { nombre: "Carlos Martínez", fecha: "2025-05-02", fichado: false },
+      { nombre: "Laura Fernández", fecha: "2025-05-01", fichado: true },
+      { nombre: "Juan García", fecha: "2025-05-03", fichado: true },
+      { nombre: "María López", fecha: "2025-05-02", fichado: false },
+      { nombre: "Miguel Torres", fecha: "2025-05-03", fichado: true },
+      { nombre: "Pedro Sánchez", fecha: "2025-05-01", fichado: true }
+    ];
 
-    <!-- KPIs -->
-    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 p-6">
+    const tabla = document.getElementById("tablaResultados");
 
-        <div class="bg-white rounded-xl p-5 shadow">
-            <p class="text-gray-500">Registros</p>
-            <h2 class="text-3xl font-bold" id="totalRegistros">0</h2>
-        </div>
+    function renderTabla(data) {
+      tabla.innerHTML = "";
+      data.forEach(r => {
+        tabla.innerHTML += `
+          <tr class="border-b dark:border-gray-600">
+            <td class="p-3 font-medium">${r.nombre}</td>
+            <td>${r.fecha}</td>
+            <td>
+              <span class="px-3 py-1 rounded-full text-xs font-bold
+                ${r.fichado ? 'bg-green-100' : 'bg-red-100'}">
+                ${r.fichado ? 'Fichado' : 'No fichado'}
+              </span>
+            </td>
+          </tr>
+        `;
+      });
+    }
 
-        <div class="bg-white rounded-xl p-5 shadow">
-            <p class="text-gray-500">Fichados</p>
-            <h2 class="text-3xl font-bold text-green-600" id="fichados">0</h2>
-        </div>
+    function actualizarDashboard(data) {
+      const fichados = data.filter(d => d.fichado).length;
+      const noFichados = data.length - fichados;
+      const empleadosUnicos = new Set(data.map(d => d.nombre)).size;
 
-        <div class="bg-white rounded-xl p-5 shadow">
-            <p class="text-gray-500">No fichados</p>
-            <h2 class="text-3xl font-bold text-red-600" id="noFichados">0</h2>
-        </div>
+      document.getElementById("totalRegistros").textContent = data.length;
+      document.getElementById("fichados").textContent = fichados;
+      document.getElementById("noFichados").textContent = noFichados;
+      document.getElementById("empleadosUnicos").textContent = empleadosUnicos;
 
-        <div class="bg-white rounded-xl p-5 shadow">
-            <p class="text-gray-500">Empleados únicos</p>
-            <h2 class="text-3xl font-bold" id="empleadosUnicos">0</h2>
-        </div>
+      barChart.data.datasets[0].data = [fichados, noFichados];
+      pieChart.data.datasets[0].data = [fichados, noFichados];
+      barChart.update();
+      pieChart.update();
+    }
 
-    </section>
+    function aplicarFiltros() {
+      const nombre = document.getElementById("filtroNombre").value.toLowerCase();
+      const inicio = document.getElementById("fechaInicio").value;
+      const fin = document.getElementById("fechaFin").value;
 
-    <!-- FILTROS -->
-    <section class="bg-white mx-6 rounded-xl shadow p-6 mb-6">
-        <h2 class="text-xl font-bold mb-4">Filtros</h2>
+      const filtrados = registros.filter(r => {
+        const okNombre = r.nombre.toLowerCase().includes(nombre);
+        const okInicio = !inicio || r.fecha >= inicio;
+        const okFin = !fin || r.fecha <= fin;
+        return okNombre && okInicio && okFin;
+      });
 
-        <div class="flex flex-wrap gap-4">
-        <label for="filtroNombre" class="sr-only">Filtrar por empleado</label>
-        <input id="filtroNombre" type="text" placeholder="Empleado"
-            class="border px-3 py-2 rounded-lg text-sm">
+      renderTabla(filtrados);
+      actualizarDashboard(filtrados);
+    }
 
-        <label for="fechaInicio" class="sr-only">Fecha inicio</label>
-        <input id="fechaInicio" type="date"
-            class="border px-3 py-2 rounded-lg text-sm">
+    document.querySelectorAll("#filtroNombre, #fechaInicio, #fechaFin")
+      .forEach(el => el.addEventListener("input", aplicarFiltros));
 
-        <label for="fechaFin" class="sr-only">Fecha fin</label>
-        <input id="fechaFin" type="date"
-            class="border px-3 py-2 rounded-lg text-sm">
+    /* ===== GRÁFICOS ===== */
+    const barChart = new Chart(document.getElementById("barChart"), {
+      type: "bar",
+      data: { labels: ["Fichados", "No fichados"], datasets: [{ data: [0, 0], backgroundColor: ["#16a34a", "#dc2626"] }] }
+    });
 
-        </div>
-    </section>
+    const pieChart = new Chart(document.getElementById("pieChart"), {
+      type: "pie",
+      data: { labels: ["Fichados", "No fichados"], datasets: [{ data: [0, 0], backgroundColor: ["#22c55e", "#ef4444"] }] },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
 
-    <!-- TABLA -->
-    <section class="bg-white mx-6 rounded-xl shadow p-6">
-
-        <h2 class="text-xl font-bold mb-4">Resultados</h2>
-
-        <table class="w-full text-sm">
-            <thead class="text-left bg-gray-100">
-                <tr>
-                    <th class="p-3">Nombre</th>
-                    <th>Fecha</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody id="tablaResultados"></tbody>
-        </table>
-    </section>
-
-    <!-- GRÁFICOS -->
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-
-        <div class="bg-white p-6 rounded-xl shadow">
-            <h3 class="font-bold mb-4">Fichajes (Barras)</h3>
-            <canvas id="barChart"></canvas>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl shadow">
-            <h3 class="font-bold mb-4">Fichajes (Tarta)</h3>
-            <div class="relative h-64 md:h-72 lg:h-80">
-                <canvas id="pieChart"></canvas>
-            </div>
-        </div>
-
-    </section>
-
-    <script>
-        /* ===== DATOS SIMULADOS ===== */
-        const registros = [
-            { nombre: "Carlos Martínez", fecha: "2025-05-01", fichado: true },
-            { nombre: "Carlos Martínez", fecha: "2025-05-02", fichado: false },
-            { nombre: "Laura Fernández", fecha: "2025-05-01", fichado: true },
-            { nombre: "Juan García", fecha: "2025-05-03", fichado: true },
-            { nombre: "María López", fecha: "2025-05-02", fichado: false },
-            { nombre: "Miguel Torres", fecha: "2025-05-03", fichado: true },
-            { nombre: "Pedro Sánchez", fecha: "2025-05-01", fichado: true }
-        ];
-
-        const tabla = document.getElementById("tablaResultados");
-
-        /* ===== RENDER TABLA ===== */
-        function renderTabla(data) {
-            tabla.innerHTML = "";
-            data.forEach(r => {
-                tabla.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-3 font-medium">${r.nombre}</td>
-                        <td>${r.fecha}</td>
-                        <td>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold
-                                ${r.fichado ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                                ${r.fichado ? 'Fichado' : 'No fichado'}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        /* ===== KPIs + GRÁFICOS ===== */
-        function actualizarDashboard(data) {
-            const fichados = data.filter(d => d.fichado).length;
-            const noFichados = data.length - fichados;
-            const empleadosUnicos = new Set(data.map(d => d.nombre)).size;
-
-            document.getElementById("totalRegistros").textContent = data.length;
-            document.getElementById("fichados").textContent = fichados;
-            document.getElementById("noFichados").textContent = noFichados;
-            document.getElementById("empleadosUnicos").textContent = empleadosUnicos;
-
-            barChart.data.datasets[0].data = [fichados, noFichados];
-            pieChart.data.datasets[0].data = [fichados, noFichados];
-            barChart.update();
-            pieChart.update();
-        }
-
-        /* ===== FILTROS ===== */
-        function aplicarFiltros() {
-            const nombre = document.getElementById("filtroNombre").value.toLowerCase();
-            const inicio = document.getElementById("fechaInicio").value;
-            const fin = document.getElementById("fechaFin").value;
-
-            const filtrados = registros.filter(r => {
-                const okNombre = r.nombre.toLowerCase().includes(nombre);
-                const okInicio = !inicio || r.fecha >= inicio;
-                const okFin = !fin || r.fecha <= fin;
-                return okNombre && okInicio && okFin;
-            });
-
-            renderTabla(filtrados);
-            actualizarDashboard(filtrados);
-        }
-
-        document.querySelectorAll("#filtroNombre, #fechaInicio, #fechaFin")
-            .forEach(el => el.addEventListener("input", aplicarFiltros));
-
-        /* ===== GRÁFICOS ===== */
-        const barChart = new Chart(document.getElementById("barChart"), {
-            type: "bar",
-            data: {
-                labels: ["Fichados", "No fichados"],
-                datasets: [{
-                    data: [0, 0],
-                    backgroundColor: ["#16a34a", "#dc2626"]
-                }]
-            }
-        });
-
-        const pieChart = new Chart(document.getElementById("pieChart"), {
-            type: "pie",
-            data: {
-                labels: ["Fichados", "No fichados"],
-                datasets: [{
-                    data: [0, 0],
-                    backgroundColor: ["#22c55e", "#ef4444"]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-
-        /* INIT */
-        aplicarFiltros();
-    </script>
-
+    aplicarFiltros();
+  </script>
 </body>
 </html>

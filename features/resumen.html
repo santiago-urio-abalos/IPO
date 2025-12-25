@@ -1,6 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("darkMode") === "enabled") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../css/dark-theme.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumen del d&iacute;a</title>
@@ -106,6 +117,60 @@
       color: #6B7280;
       font-size: 14px;
     }
+    /* ===== DARK MODE (SOLO VISUAL, NO FUNCIONAL) ===== */
+
+html.dark body {
+  background: #111827;
+  color: #f9fafb;
+}
+
+/* Cards */
+html.dark .card {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* Header button */
+html.dark #btnBack {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark #btnBack i {
+  color: #e5e7eb;
+}
+
+/* Textos secundarios */
+html.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+html.dark .subtle {
+  color: #9ca3af;
+}
+
+/* Timeline */
+html.dark .timeline-row:not(:last-child)::after {
+  background: #374151;
+}
+
+/* Pills */
+html.dark .pill {
+  background: #111827;
+  color: #d1d5db;
+  border-color: #374151;
+}
+
+/* Progress bar */
+html.dark .progress-shell {
+  background: #374151;
+}
+
+html.dark .progress-fill {
+  background: linear-gradient(90deg, #4b5563, #6b7280);
+}
+
   </style>
 </head>
 
@@ -359,5 +424,7 @@ backBtn.addEventListener("click", () => {
 
 
   </script>
+  <script src="../js/dark-mode.js" type="module"></script>
+
 </body>
 </html>

@@ -1,6 +1,16 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
+      <script>
+    (function () {
+      try {
+        if (localStorage.getItem("darkMode") === "enabled") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="../css/dark-theme.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calendario</title>
@@ -40,6 +50,98 @@
     .dot-label { padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; }
     .badge { border-radius: 10px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
     .legend-item { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #E5E7EB; background: #fff; }
+    /* ===========================
+   DARK MODE – CALENDARIO
+   =========================== */
+
+html.dark body {
+  background: #0f172a;
+  color: #f9fafb;
+}
+
+/* Cards */
+html.dark .card {
+  background: #111827;
+  border-color: #1f2937;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* Header / textos secundarios */
+html.dark .text-gray-600,
+html.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+/* Botón volver */
+html.dark #btnBack {
+  background: #111827;
+  border-color: #1f2937;
+}
+html.dark #btnBack i {
+  color: #e5e7eb;
+}
+
+/* Botones mes */
+html.dark #prevMonth,
+html.dark #nextMonth {
+  background: #111827;
+  border-color: #1f2937;
+}
+html.dark #prevMonth i,
+html.dark #nextMonth i {
+  color: #e5e7eb;
+}
+html.dark #prevMonth:hover,
+html.dark #nextMonth:hover {
+  background: #1f2937;
+}
+
+/* Días del calendario */
+html.dark .day-btn {
+  color: #e5e7eb;
+}
+html.dark .day-btn:hover {
+  background: #1f2937;
+}
+
+/* Día seleccionado */
+html.dark .day-selected {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Hoy */
+html.dark .day-today-muted {
+  box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.6);
+}
+
+/* Leyenda */
+html.dark .legend-item {
+  background: #111827;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Badges eventos */
+html.dark .badge {
+  color: #111827;
+}
+
+/* Listas de eventos */
+html.dark #eventList,
+html.dark #upcomingList {
+  color: #d1d5db;
+}
+
+/* Botón agregar evento */
+html.dark #addEventBtn {
+  background: #2563eb;
+  color: #ffffff;
+}
+html.dark #addEventBtn:hover {
+  background: #1d4ed8;
+}
+
   </style>
 </head>
 <body class="min-h-screen">
@@ -56,7 +158,7 @@
 
       <div>
         <h1 class="text-2xl font-bold">Calendario</h1>
-        <p class="text-gray-500 text-sm">Vista mensual de turnos y eventos</p>
+        <p class="text-gray-600 text-sm">Vista mensual de turnos y eventos</p>
       </div>
     </header>
 
@@ -70,8 +172,12 @@
       <div class="card lg:col-span-2">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
-            <button id="prevMonth" class="h-9 w-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-100"><i class="fa-solid fa-chevron-left"></i></button>
-            <button id="nextMonth" class="h-9 w-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-100"><i class="fa-solid fa-chevron-right"></i></button>
+            <button id="prevMonth" aria-label="Mes anterior" class="h-9 w-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-100">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button id="nextMonth" aria-label="Mes siguiente" class="h-9 w-9 flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-100">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
           <div class="text-lg font-semibold" id="monthLabel">Mes</div>
         </div>
@@ -252,9 +358,11 @@
 
       // Leading blanks
       for (let i = 0; i < startWeekday; i++) {
-        const span = document.createElement('span');
-        span.className = 'h-10';
-        grid.appendChild(span);
+        const blank = document.createElement('span');
+        blank.className = 'h-10 w-10'; // tamaño igual que los botones
+        blank.setAttribute('aria-hidden', 'true'); // marcado como decorativo
+        grid.appendChild(blank);
+
       }
 
       const pseudo = generatePseudoEvents(currentYear, currentMonth);
@@ -378,5 +486,7 @@ backBtn.addEventListener("click", () => {
 
 
   </script>
+  <script src="../js/dark-mode.js" type="module"></script>
+
 </body>
 </html>
