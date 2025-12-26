@@ -206,6 +206,7 @@ html.dark button {
 
   <script>
     const STORAGE_KEY = 'resumen-semanal-data';
+    const DAILY_KEY = 'fichajes-diarios';
 
     function pad(n) { return n.toString().padStart(2, '0'); }
 
@@ -245,6 +246,65 @@ html.dark button {
         console.warn('No se pudo leer el resumen semanal', e);
       }
       return buildWeek(weekStart);
+    }
+
+    function loadDailyStore() {
+      try {
+        const raw = localStorage.getItem(DAILY_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.warn('No se pudo leer el store diario', e);
+        return {};
+      }
+    }
+
+    function calcularHorasDia(eventos, dateKey) {
+      if (!Array.isArray(eventos) || eventos.length === 0) return 0;
+
+      const ordenados = [...eventos].sort((a, b) => new Date(a.time) - new Date(b.time));
+      const inicio = ordenados.find(ev => ev.type === 'entrada');
+      if (!inicio) return 0;
+
+      const fin = [...ordenados].reverse().find(ev => ev.type === 'salida');
+      const hoyKey = toKey(new Date());
+      const endTime = fin
+        ? new Date(fin.time)
+        : (dateKey === hoyKey ? new Date() : new Date(ordenados[ordenados.length - 1].time));
+
+      let pausaMs = 0;
+      let pausaStart = null;
+
+      ordenados.forEach(ev => {
+        const time = new Date(ev.time);
+        if (ev.type === 'pausa') {
+          pausaStart = time;
+        }
+        if (ev.type === 'finPausa' && pausaStart) {
+          pausaMs += time - pausaStart;
+          pausaStart = null;
+        }
+      });
+
+      if (pausaStart) {
+        const pausaEnd = dateKey === hoyKey ? new Date() : endTime;
+        pausaMs += pausaEnd - pausaStart;
+      }
+
+      let totalMs = endTime - new Date(inicio.time) - pausaMs;
+      if (!Number.isFinite(totalMs) || totalMs < 0) totalMs = 0;
+      return totalMs / 3600000;
+    }
+
+    function mergeWeekFromEvents() {
+      const store = loadDailyStore();
+      if (!store || typeof store !== 'object') return;
+
+      weekDays = weekDays.map(day => {
+        const key = toKey(new Date(day.date));
+        const eventos = store[key];
+        if (!Array.isArray(eventos) || eventos.length === 0) return day;
+        return { ...day, hours: calcularHorasDia(eventos, key) };
+      });
     }
 
     function saveWeekData(weekStart, days) {
@@ -320,6 +380,7 @@ html.dark button {
     }
 
     function renderAll() {
+      mergeWeekFromEvents();
       updateStats();
       renderBars();
       renderDailyList();
@@ -351,6 +412,12 @@ html.dark button {
       saveWeekData(weekStart, weekDays);
       renderAll();
     };
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === DAILY_KEY) {
+        renderAll();
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       renderAll();

@@ -1,0 +1,79 @@
+{
+  "empleados": {
+    "juan@click.com": {
+      "nombre": "Juan",
+      "registros": {
+        "2025-11-01": { "entrada": "08:05", "salida": "16:10", "pausas": "00:25" },
+        "2025-11-02": { "entrada": "08:15", "salida": "16:20", "pausas": "00:30" },
+        "2025-11-03": { "entrada": "08:00", "salida": "16:05", "pausas": "00:20" },
+        "2025-11-04": { "entrada": "09:00", "salida": "17:10", "pausas": "00:35" },
+        "2025-11-05": { "entrada": "08:25", "salida": "16:40", "pausas": "00:30" },
+        "2025-11-06": { "entrada": "08:10", "salida": "16:15", "pausas": "00:20" },
+        "2025-11-07": { "entrada": "08:30", "salida": "16:35", "pausas": "00:25" }
+      }
+    },
+    "juanjo@click.com": {
+      "nombre": "Juanjo",
+      "registros": {
+        "2025-11-03": { "entrada": "07:55", "salida": "15:55", "pausas": "00:20" },
+        "2025-11-04": { "entrada": "08:10", "salida": "16:15", "pausas": "00:25" },
+        "2025-11-05": { "entrada": "08:40", "salida": "17:05", "pausas": "00:30" },
+        "2025-11-06": { "entrada": "08:20", "salida": "16:20", "pausas": "00:30" },
+        "2025-11-07": { "entrada": "08:05", "salida": "16:00", "pausas": "00:25" }
+      }
+    },
+    "maria@click.com": {
+      "nombre": "Maria",
+      "registros": {
+        "2025-11-01": { "entrada": "09:00", "salida": "17:20", "pausas": "00:35" },
+        "2025-11-02": { "entrada": "09:10", "salida": "17:15", "pausas": "00:25" },
+        "2025-11-03": { "entrada": "08:50", "salida": "17:00", "pausas": "00:30" },
+        "2025-11-04": { "entrada": "09:05", "salida": "17:30", "pausas": "00:40" },
+        "2025-11-05": { "entrada": "09:00", "salida": "17:10", "pausas": "00:30" },
+        "2025-11-06": { "entrada": "08:55", "salida": "17:05", "pausas": "00:25" }
+      }
+    },
+    "ana@click.com": {
+      "nombre": "Ana",
+      "registros": {
+        "2025-11-06": { "entrada": "08:35", "salida": "16:35", "pausas": "00:20" },
+        "2025-11-07": { "entrada": "08:25", "salida": "16:30", "pausas": "00:25" },
+        "2025-11-08": { "entrada": "08:45", "salida": "16:50", "pausas": "00:30" },
+        "2025-11-09": { "entrada": "09:00", "salida": "17:10", "pausas": "00:35" },
+        "2025-11-10": { "entrada": "08:30", "salida": "16:40", "pausas": "00:30" },
+        "2025-11-11": { "entrada": "08:20", "salida": "16:25", "pausas": "00:20" },
+        "2025-11-12": { "entrada": "08:40", "salida": "16:50", "pausas": "00:30" }
+      }
+    },
+    "pedro@click.com": {
+      "nombre": "Pedro",
+      "registros": {
+        "2025-11-02": { "entrada": "08:10", "salida": "16:05", "pausas": "00:20" },
+        "2025-11-03": { "entrada": "08:00", "salida": "16:10", "pausas": "00:25" },
+        "2025-11-04": { "entrada": "08:20", "salida": "16:30", "pausas": "00:30" },
+        "2025-11-05": { "entrada": "08:05", "salida": "16:15", "pausas": "00:20" },
+        "2025-11-06": { "entrada": "08:15", "salida": "16:25", "pausas": "00:25" },
+        "2025-11-07": { "entrada": "08:05", "salida": "16:10", "pausas": "00:20" },
+        "2025-11-08": { "entrada": "08:25", "salida": "16:35", "pausas": "00:30" }
+      }
+    },
+    "carlos@click.com": {
+      "nombre": "Carlos",
+      "registros": {
+        "2025-11-01": { "entrada": "07:50", "salida": "15:50", "pausas": "00:20" },
+        "2025-11-02": { "entrada": "08:00", "salida": "16:05", "pausas": "00:25" },
+        "2025-11-03": { "entrada": "08:10", "salida": "16:20", "pausas": "00:30" },
+        "2025-11-04": { "entrada": "08:05", "salida": "16:10", "pausas": "00:25" }
+      }
+    },
+    "laura@click.com": {
+      "nombre": "Laura",
+      "registros": {
+        "2025-11-05": { "entrada": "09:10", "salida": "17:20", "pausas": "00:35" },
+        "2025-11-06": { "entrada": "09:00", "salida": "17:05", "pausas": "00:25" },
+        "2025-11-07": { "entrada": "09:05", "salida": "17:15", "pausas": "00:30" },
+        "2025-11-08": { "entrada": "08:55", "salida": "17:00", "pausas": "00:20" }
+      }
+    }
+  }
+}

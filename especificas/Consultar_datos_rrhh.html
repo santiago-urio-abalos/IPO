@@ -199,21 +199,76 @@
 </div>
 
 <script>
-    /* DATOS FICTICIOS */
-    const datosFake = {
-        "empleado@click.com": {
-            "2025-11-01": { entrada: "08:00", salida: "16:00", pausas: "00:30" },
-            "2025-11-02": { entrada: "09:00", salida: "17:20", pausas: "00:20" },
-            "2025-11-03": { entrada: "08:30", salida: "16:30", pausas: "00:45" },
-            "2025-11-04": { entrada: "07:50", salida: "15:50", pausas: "00:25" },
-            "2025-11-05": { entrada: "09:10", salida: "17:15", pausas: "00:30" },
-            "2025-11-06": { entrada: "08:15", salida: "16:10", pausas: "00:20" },
-            "2025-11-07": { entrada: "08:45", salida: "16:45", pausas: "00:35" },
-            "2025-11-08": { entrada: "09:00", salida: "17:00", pausas: "00:30" },
-            "2025-11-09": { entrada: "08:05", salida: "16:05", pausas: "00:25" },
-            "2025-11-10": { entrada: "08:30", salida: "16:30", pausas: "00:40" }
+    /* DATOS DESDE JSON */
+    const DATA_URL = "../data/fichajes.json";
+    const LOCAL_RRHH_KEY = "fichajes-empleados";
+    let datosFichajes = null;
+    let datosError = false;
+
+    function nombreDesdeCorreo(correo) {
+        if (!correo) return "Empleado";
+        const base = correo.split("@")[0] || "";
+        if (!base) return "Empleado";
+        return base.charAt(0).toUpperCase() + base.slice(1);
+    }
+
+    function cargarDatosLocal() {
+        try {
+            const raw = localStorage.getItem(LOCAL_RRHH_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (error) {
+            console.warn("No se pudieron leer los datos locales:", error);
+            return {};
         }
-    };
+    }
+
+    function mergeDatos(base, local) {
+        const merged = { empleados: {} };
+        const baseEmpleados = base && base.empleados ? base.empleados : {};
+
+        Object.keys(baseEmpleados).forEach(correo => {
+            const info = baseEmpleados[correo] || {};
+            merged.empleados[correo] = {
+                nombre: info.nombre || nombreDesdeCorreo(correo),
+                registros: { ...(info.registros || {}) }
+            };
+        });
+
+        if (local && typeof local === "object") {
+            Object.keys(local).forEach(correo => {
+                const info = local[correo] || {};
+                if (!merged.empleados[correo]) {
+                    merged.empleados[correo] = {
+                        nombre: info.nombre || nombreDesdeCorreo(correo),
+                        registros: {}
+                    };
+                }
+                const registrosBase = merged.empleados[correo].registros || {};
+                const registrosLocal = info.registros || {};
+                merged.empleados[correo].registros = { ...registrosBase, ...registrosLocal };
+                if (!merged.empleados[correo].nombre) {
+                    merged.empleados[correo].nombre = info.nombre || nombreDesdeCorreo(correo);
+                }
+            });
+        }
+
+        return merged;
+    }
+
+    async function cargarDatos() {
+        if (datosFichajes || datosError) return datosFichajes;
+        let base = { empleados: {} };
+        try {
+            const resp = await fetch(DATA_URL, { cache: "no-store" });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            base = await resp.json();
+        } catch (error) {
+            console.error("No se pudieron cargar los datos:", error);
+            datosError = true;
+        }
+        datosFichajes = mergeDatos(base, cargarDatosLocal());
+        return datosFichajes;
+    }
 
     function cambiarModo() {
         const modo = document.querySelector('input[name="mode"]:checked').value;
@@ -228,8 +283,8 @@
         }
     }
 
-    function consultar() {
-        const correo = document.getElementById("correo").value.trim();
+    async function consultar() {
+        const correo = document.getElementById("correo").value.trim().toLowerCase();
         const modo = document.querySelector('input[name="mode"]:checked').value;
 
         if (!correo) {
@@ -237,7 +292,15 @@
             return;
         }
 
-        const empleado = datosFake[correo];
+        const dataBase = await cargarDatos();
+        const data = mergeDatos(dataBase || { empleados: {} }, cargarDatosLocal());
+
+        if (!data || !data.empleados) {
+            mostrarMensaje("No se pudo cargar la base de datos.");
+            return;
+        }
+
+        const empleado = data.empleados[correo];
 
         if (!empleado) {
             mostrarMensaje("No se encontraron datos para ese correo.");
@@ -247,11 +310,13 @@
         const tablaBody = document.getElementById("tablaBody");
         tablaBody.innerHTML = "";
 
-        if (modo === "1") consultarUnDia(empleado);
-        else consultarDosDias(empleado);
+        const registros = empleado.registros || {};
+
+        if (modo === "1") consultarUnDia(registros);
+        else consultarDosDias(registros);
     }
 
-    function consultarUnDia(empleado) {
+    function consultarUnDia(registros) {
         const dia = document.getElementById("dia_unico").value;
 
         if (!dia) {
@@ -259,10 +324,10 @@
             return;
         }
 
-        agregarFila(empleado, dia);
+        agregarFila(registros, dia);
     }
 
-    function consultarDosDias(empleado) {
+    function consultarDosDias(registros) {
     const d1 = document.getElementById("dia1").value;
     const d2 = document.getElementById("dia2").value;
 
@@ -276,11 +341,11 @@
         return;
     }
 
-    listarRangoFechas(empleado, d1, d2);
+    listarRangoFechas(registros, d1, d2);
 }
 
 /* NUEVA FUNCIÓN: RECORRE TODAS LAS FECHAS DEL RANGO */
-function listarRangoFechas(empleado, fechaInicio, fechaFin) {
+function listarRangoFechas(registros, fechaInicio, fechaFin) {
     const tablaBody = document.getElementById("tablaBody");
     tablaBody.innerHTML = "";
 
@@ -289,7 +354,7 @@ function listarRangoFechas(empleado, fechaInicio, fechaFin) {
 
     while (actual <= fin) {
         const dia = actual.toISOString().split("T")[0]; // YYYY-MM-DD
-        agregarFila(empleado, dia);
+        agregarFila(registros, dia);
 
         // avanzar un día
         actual.setDate(actual.getDate() + 1);
@@ -300,19 +365,22 @@ function listarRangoFechas(empleado, fechaInicio, fechaFin) {
 }
 
 
-    function agregarFila(empleado, dia) {
+    function agregarFila(registros, dia) {
         const tablaBody = document.getElementById("tablaBody");
 
-        if (empleado[dia]) {
-            const r = empleado[dia];
-            const totalHoras = calcularHoras(r.entrada, r.salida, r.pausas);
+        if (registros[dia]) {
+            const r = registros[dia];
+            const entrada = r.entrada || "--:--";
+            const salida = r.salida || "--:--";
+            const pausas = r.pausas || "00:00";
+            const totalHoras = calcularHoras(entrada, salida, pausas);
 
             tablaBody.innerHTML += `
                 <tr>
                     <td>${dia}</td>
-                    <td>${r.entrada}</td>
-                    <td>${r.salida}</td>
-                    <td>${r.pausas}</td>
+                    <td>${entrada}</td>
+                    <td>${salida}</td>
+                    <td>${pausas}</td>
                     <td>${totalHoras}</td>
                 </tr>`;
         } else {
@@ -327,10 +395,23 @@ function listarRangoFechas(empleado, fechaInicio, fechaFin) {
         document.getElementById("noData").style.display = "none";
     }
 
+    function parseHora(valor) {
+        if (!valor || typeof valor !== "string") return null;
+        const partes = valor.split(":").map(Number);
+        if (partes.length !== 2 || partes.some(Number.isNaN)) return null;
+        return partes;
+    }
+
     function calcularHoras(entrada, salida, pausas) {
-        const [h1, m1] = entrada.split(":").map(Number);
-        const [h2, m2] = salida.split(":").map(Number);
-        const [hp, mp] = pausas.split(":").map(Number);
+        const inicio = parseHora(entrada);
+        const fin = parseHora(salida);
+        const pausa = parseHora(pausas) || [0, 0];
+
+        if (!inicio || !fin) return "--:--";
+
+        const [h1, m1] = inicio;
+        const [h2, m2] = fin;
+        const [hp, mp] = pausa;
 
         const total = (h2 * 60 + m2) - (h1 * 60 + m1) - (hp * 60 + mp);
         const th = Math.floor(total / 60);

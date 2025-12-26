@@ -69,6 +69,13 @@
             height: 34px;
             border-radius: 50%;
         }
+        .estado-valor {
+            color: #111827;
+            font-weight: 600;
+        }
+        html.dark .estado-valor {
+            color: #f9fafb;
+        }
         button {
             background-color: var(--btn-bg);
             color: var(--btn-text);
@@ -136,6 +143,36 @@ html.dark {
             <h2 class="font-bold text-lg">Hora actual</h2>
             <p id="time" class="text-4xl font-bold mt-2"></p>
             <p id="date" class="mt-2"></p>
+        </div>
+    </div>
+
+    <!-- ESTADO -->
+    <div class="px-6 mt-6">
+        <div class="bg-white p-5 rounded-2xl shadow">
+            <h3 class="font-bold text-lg">Estado actual</h3>
+            <div class="mt-3 space-y-1 text-sm">
+                <p><span class="text-gray-500">Jornada:</span> <span id="estadoJornada" class="estado-valor">No iniciada</span></p>
+                <p><span class="text-gray-500">Pausa:</span> <span id="estadoPausa" class="estado-valor">Sin pausa</span></p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+                <div>
+                    <p class="text-gray-500">Entrada</p>
+                    <p id="horaEntrada" class="estado-valor">--:--</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Salida</p>
+                    <p id="horaSalida" class="estado-valor">--:--</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Inicio pausa</p>
+                    <p id="horaPausaInicio" class="estado-valor">--:--</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Fin pausa</p>
+                    <p id="horaPausaFin" class="estado-valor">--:--</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">Ultima accion: <span id="ultimaAccion">--</span></p>
         </div>
     </div>
 
@@ -239,6 +276,242 @@ html.dark {
     let pausaIniciada = false;
     let activeSlider = null;
 
+    const RESUMEN_DIA_KEY = "resumen-dia-events";
+    const FICHAJES_DIARIOS_KEY = "fichajes-diarios";
+    const etiquetasAccion = {
+        entrada: "Entrada",
+        salida: "Salida",
+        pausa: "Inicio pausa",
+        finPausa: "Fin pausa"
+    };
+
+    function padNumero(valor) {
+        return valor.toString().padStart(2, "0");
+    }
+
+    function toDateKey(date = new Date()) {
+        return `${date.getFullYear()}-${padNumero(date.getMonth() + 1)}-${padNumero(date.getDate())}`;
+    }
+
+    function cargarStoreDiario() {
+        try {
+            const raw = localStorage.getItem(FICHAJES_DIARIOS_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (error) {
+            console.warn("No se pudo leer el store diario", error);
+            return {};
+        }
+    }
+
+    function guardarStoreDiario(store) {
+        try {
+            localStorage.setItem(FICHAJES_DIARIOS_KEY, JSON.stringify(store));
+        } catch (error) {
+            console.warn("No se pudo guardar el store diario", error);
+        }
+    }
+
+    function eventosSonDelDia(eventos, dateKey) {
+        if (!Array.isArray(eventos)) return false;
+        return eventos.every(ev => {
+            if (!ev || !ev.time) return false;
+            return toDateKey(new Date(ev.time)) === dateKey;
+        });
+    }
+
+    function cargarEventosHoy() {
+        const hoyKey = toDateKey(new Date());
+        const store = cargarStoreDiario();
+        const guardados = store[hoyKey];
+        if (Array.isArray(guardados) && eventosSonDelDia(guardados, hoyKey)) {
+            return guardados;
+        }
+
+        try {
+            const raw = localStorage.getItem(RESUMEN_DIA_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && eventosSonDelDia(parsed, hoyKey)) {
+                    store[hoyKey] = parsed;
+                    guardarStoreDiario(store);
+                    return parsed;
+                }
+            }
+        } catch (error) {
+            console.warn("No se pudieron cargar eventos previos", error);
+        }
+
+        return [];
+    }
+
+    function guardarEventos(eventos, date = new Date()) {
+        const dateKey = toDateKey(date);
+        const store = cargarStoreDiario();
+        store[dateKey] = eventos;
+        guardarStoreDiario(store);
+
+        const hoyKey = toDateKey(new Date());
+        if (dateKey === hoyKey) {
+            try {
+                localStorage.setItem(RESUMEN_DIA_KEY, JSON.stringify(eventos));
+            } catch (error) {
+                console.warn("No se pudieron guardar eventos del dia", error);
+            }
+        }
+    }
+
+    let eventosHoy = cargarEventosHoy();
+
+    const RRHH_STORAGE_KEY = "fichajes-empleados";
+
+    function nombreDesdeEmail(email) {
+        if (!email) return "Usuario";
+        const base = email.split("@")[0] || "";
+        if (!base) return "Usuario";
+        return base.charAt(0).toUpperCase() + base.slice(1);
+    }
+
+    const userEmail = (localStorage.getItem("userEmail") || "usuario@click.com").toLowerCase();
+    const userNombre = nombreDesdeEmail(userEmail);
+    if (!localStorage.getItem("userEmail")) {
+        localStorage.setItem("userEmail", userEmail);
+    }
+
+    function cargarStoreRRHH() {
+        try {
+            const raw = localStorage.getItem(RRHH_STORAGE_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch (error) {
+            console.warn("No se pudo leer el store RRHH", error);
+            return {};
+        }
+    }
+
+    function guardarStoreRRHH(store) {
+        try {
+            localStorage.setItem(RRHH_STORAGE_KEY, JSON.stringify(store));
+        } catch (error) {
+            console.warn("No se pudo guardar el store RRHH", error);
+        }
+    }
+
+    function formatMinutos(minutos) {
+        const horas = Math.floor(minutos / 60);
+        const mins = minutos % 60;
+        return `${padNumero(horas)}:${padNumero(mins)}`;
+    }
+
+    function calcularPausaMinutos(eventos, dateKey) {
+        let pausaMs = 0;
+        let pausaStart = null;
+        const hoyKey = toDateKey(new Date());
+
+        eventos.forEach(ev => {
+            const time = new Date(ev.time);
+            if (ev.type === "pausa") {
+                pausaStart = time;
+            }
+            if (ev.type === "finPausa" && pausaStart) {
+                pausaMs += time - pausaStart;
+                pausaStart = null;
+            }
+        });
+
+        if (pausaStart) {
+            const fin = dateKey === hoyKey ? new Date() : new Date(eventos[eventos.length - 1].time);
+            pausaMs += fin - pausaStart;
+        }
+
+        const minutos = Math.max(0, Math.floor(pausaMs / 60000));
+        return minutos;
+    }
+
+    function construirRegistroDiario(eventos, dateKey) {
+        if (!Array.isArray(eventos) || eventos.length === 0) return null;
+
+        const ordenados = [...eventos].sort((a, b) => new Date(a.time) - new Date(b.time));
+        const entradaEv = ordenados.find(ev => ev.type === "entrada");
+        if (!entradaEv) return null;
+
+        const salidaEv = [...ordenados].reverse().find(ev => ev.type === "salida");
+        const pausaMin = calcularPausaMinutos(ordenados, dateKey);
+
+        return {
+            entrada: formatHora(new Date(entradaEv.time)),
+            salida: salidaEv ? formatHora(new Date(salidaEv.time)) : "",
+            pausas: formatMinutos(pausaMin)
+        };
+    }
+
+    function actualizarRegistroRRHH(eventos, date = new Date()) {
+        if (!userEmail) return;
+        const dateKey = toDateKey(date);
+        const registro = construirRegistroDiario(eventos, dateKey);
+        if (!registro) return;
+
+        const store = cargarStoreRRHH();
+        if (!store[userEmail]) {
+            store[userEmail] = { nombre: userNombre, registros: {} };
+        }
+        if (!store[userEmail].nombre) {
+            store[userEmail].nombre = userNombre;
+        }
+        if (!store[userEmail].registros) {
+            store[userEmail].registros = {};
+        }
+        store[userEmail].registros[dateKey] = registro;
+        guardarStoreRRHH(store);
+    }
+
+    const estadoUI = {
+        jornada: document.getElementById("estadoJornada"),
+        pausa: document.getElementById("estadoPausa"),
+        entrada: document.getElementById("horaEntrada"),
+        salida: document.getElementById("horaSalida"),
+        pausaInicio: document.getElementById("horaPausaInicio"),
+        pausaFin: document.getElementById("horaPausaFin"),
+        ultimaAccion: document.getElementById("ultimaAccion")
+    };
+
+    function formatHora(date) {
+        return date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function actualizarEstado() {
+        if (!estadoUI.jornada || !estadoUI.pausa) return;
+
+        if (jornadaIniciada) {
+            estadoUI.jornada.textContent = "En curso";
+        } else if (estadoUI.entrada.textContent !== "--:--") {
+            estadoUI.jornada.textContent = "Finalizada";
+        } else {
+            estadoUI.jornada.textContent = "No iniciada";
+        }
+
+        estadoUI.pausa.textContent = pausaIniciada ? "En pausa" : "Sin pausa";
+    }
+
+    function registrarAccion(tipo, date = new Date()) {
+        if (!estadoUI.ultimaAccion) return;
+
+        const hora = formatHora(date);
+
+        if (tipo === "entrada") estadoUI.entrada.textContent = hora;
+        if (tipo === "salida") estadoUI.salida.textContent = hora;
+        if (tipo === "pausa") estadoUI.pausaInicio.textContent = hora;
+        if (tipo === "finPausa") estadoUI.pausaFin.textContent = hora;
+
+        const etiqueta = etiquetasAccion[tipo] || "Accion";
+
+        estadoUI.ultimaAccion.textContent = `${etiqueta} ${hora}`;
+        actualizarEstado();
+
+        const evento = { type: tipo, time: date.toISOString() };
+        eventosHoy.push(evento);
+        guardarEventos(eventosHoy, date);
+        actualizarRegistroRRHH(eventosHoy, date);
+    }
+
     const sliders = {
         jornada: {
             track: document.getElementById("sliderJornada"),
@@ -251,6 +524,47 @@ html.dark {
             label: document.getElementById("labelPausa"),
         }
     };
+
+    function syncSliders() {
+        sliders.jornada.label.textContent =
+            jornadaIniciada ? "Desliza para finalizar jornada" : "Desliza para iniciar jornada";
+        sliders.jornada.track.style.backgroundColor =
+            jornadaIniciada ? "#116931" : "#15803D";
+        sliders.pausa.label.textContent =
+            pausaIniciada ? "Desliza para terminar pausa" : "Desliza para iniciar pausa";
+        sliders.pausa.track.style.backgroundColor =
+            pausaIniciada ? "#a13017" : "#ce3d1c";
+        sliders.pausa.track.classList.toggle("disabled", !jornadaIniciada);
+        sliders.jornada.track.classList.toggle("disabled", pausaIniciada);
+    }
+
+    function syncEstadoDesdeEventos(eventos) {
+        if (!Array.isArray(eventos) || eventos.length === 0) return;
+
+        const ordenados = [...eventos].sort((a, b) => new Date(a.time) - new Date(b.time));
+        const ultimaEntrada = [...ordenados].reverse().find(ev => ev.type === "entrada");
+        const ultimaSalida = [...ordenados].reverse().find(ev => ev.type === "salida");
+        const ultimaPausa = [...ordenados].reverse().find(ev => ev.type === "pausa");
+        const ultimaFinPausa = [...ordenados].reverse().find(ev => ev.type === "finPausa");
+
+        jornadaIniciada = !!(ultimaEntrada && (!ultimaSalida || new Date(ultimaEntrada.time) > new Date(ultimaSalida.time)));
+        pausaIniciada = !!(ultimaPausa && (!ultimaFinPausa || new Date(ultimaPausa.time) > new Date(ultimaFinPausa.time)));
+
+        if (ultimaEntrada) estadoUI.entrada.textContent = formatHora(new Date(ultimaEntrada.time));
+        if (ultimaSalida) estadoUI.salida.textContent = formatHora(new Date(ultimaSalida.time));
+        if (ultimaPausa) estadoUI.pausaInicio.textContent = formatHora(new Date(ultimaPausa.time));
+        if (ultimaFinPausa) estadoUI.pausaFin.textContent = formatHora(new Date(ultimaFinPausa.time));
+
+        const ultimoEvento = ordenados[ordenados.length - 1];
+        if (ultimoEvento && estadoUI.ultimaAccion) {
+            const etiqueta = etiquetasAccion[ultimoEvento.type] || "Accion";
+            estadoUI.ultimaAccion.textContent = `${etiqueta} ${formatHora(new Date(ultimoEvento.time))}`;
+        }
+
+        syncSliders();
+        actualizarEstado();
+        actualizarRegistroRRHH(ordenados, new Date(ordenados[0].time));
+    }
 
     function setupSlider(key) {
         const s = sliders[key];
@@ -285,6 +599,12 @@ html.dark {
 
     setupSlider("jornada");
     setupSlider("pausa");
+    if (eventosHoy.length) {
+        syncEstadoDesdeEventos(eventosHoy);
+    } else {
+        syncSliders();
+        actualizarEstado();
+    }
 
     const modal = document.getElementById("confirmModal");
     const modalMessage = document.getElementById("modalMessage");
@@ -310,6 +630,11 @@ html.dark {
             sliders.jornada.track.style.backgroundColor =
                 jornadaIniciada ? "#116931" : "#15803D";
             sliders.pausa.track.classList.toggle("disabled", !jornadaIniciada);
+            if (jornadaIniciada) {
+                registrarAccion("entrada");
+            } else {
+                registrarAccion("salida");
+            }
         }
 
         if (activeSlider === "pausa") {
@@ -319,6 +644,11 @@ html.dark {
             sliders.pausa.track.style.backgroundColor =
                 pausaIniciada ? "#a13017" : "#ce3d1c";
             sliders.jornada.track.classList.toggle("disabled", pausaIniciada);
+            if (pausaIniciada) {
+                registrarAccion("pausa");
+            } else {
+                registrarAccion("finPausa");
+            }
         }
         const accion = activeSlider; // ← GUARDAMOS LA ACCIÓN
 

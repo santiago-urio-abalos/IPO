@@ -234,7 +234,48 @@ html.dark .progress-fill {
   <script>
     const goalHours = 8;
     const storageKey = 'resumen-dia-events';
+    const dailyKey = 'fichajes-diarios';
     const today = new Date();
+
+    function pad(numero) {
+      return numero.toString().padStart(2, '0');
+    }
+
+    function toDateKey(date = new Date()) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function loadDailyStore() {
+      try {
+        const raw = localStorage.getItem(dailyKey);
+        return raw ? JSON.parse(raw) : {};
+      } catch (error) {
+        console.warn('No se pudo leer el store diario', error);
+        return {};
+      }
+    }
+
+    function loadDailyEvents() {
+      try {
+        const store = loadDailyStore();
+        const key = toDateKey(new Date());
+        const list = store[key];
+        if (Array.isArray(list) && list.length) {
+          return list;
+        }
+      } catch (error) {
+        console.warn('No se pudieron cargar eventos diarios', error);
+      }
+      return null;
+    }
+
+    function eventosSonDelDia(eventos, dateKey) {
+      if (!Array.isArray(eventos)) return false;
+      return eventos.every(ev => {
+        if (!ev || !ev.time) return false;
+        return toDateKey(new Date(ev.time)) === dateKey;
+      });
+    }
 
     function buildTodayTime(hours, minutes, seconds) {
       return new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, seconds).toISOString();
@@ -257,10 +298,17 @@ html.dark .progress-fill {
     let events = loadEvents();
 
     function loadEvents() {
+      const dailyEvents = loadDailyEvents();
+      if (dailyEvents) {
+        return dailyEvents;
+      }
       try {
         const saved = localStorage.getItem(storageKey);
         if (saved) {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          if (eventosSonDelDia(parsed, toDateKey(new Date()))) {
+            return parsed;
+          }
         }
       } catch (error) {
         console.warn('No se pudieron cargar eventos guardados', error);
@@ -273,6 +321,15 @@ html.dark .progress-fill {
         localStorage.setItem(storageKey, JSON.stringify(events));
       } catch (error) {
         console.warn('No se pudieron guardar los eventos', error);
+      }
+
+      try {
+        const store = loadDailyStore();
+        const key = toDateKey(new Date());
+        store[key] = events;
+        localStorage.setItem(dailyKey, JSON.stringify(store));
+      } catch (error) {
+        console.warn('No se pudo actualizar el store diario', error);
       }
     }
 
@@ -407,6 +464,14 @@ html.dark .progress-fill {
       renderTimeline();
       updateStats();
     };
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === storageKey || event.key === dailyKey) {
+        events = loadEvents();
+        renderTimeline();
+        updateStats();
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', bootstrap);
 
