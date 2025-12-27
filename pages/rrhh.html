@@ -12,6 +12,8 @@
     body { background: #f3f4f6; color: #1f2937; }
     header { background: #0f766e; color: #fff; }
     .card { background: #fff; border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .chart-card { height: 280px; }
+    .chart-card canvas { width: 100% !important; height: 100% !important; }
     input, select { background: #fff; border: 1px solid #d1d5db; color: #1f2937; }
     table thead { background: #e5e7eb; }
     button { background: #e5e7eb; color: #1f2937; }
@@ -107,29 +109,108 @@
 
   <!-- GRÁFICOS -->
   <section class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-    <div class="card p-6">
+    <div class="card p-6 chart-card">
       <h3 class="font-bold mb-4">Fichajes (Barras)</h3>
       <canvas id="barChart"></canvas>
     </div>
-    <div class="card p-6">
+    <div class="card p-6 chart-card">
       <h3 class="font-bold mb-4">Fichajes (Tarta)</h3>
       <canvas id="pieChart"></canvas>
     </div>
   </section>
 
   <script>
-    /* ===== DATOS SIMULADOS ===== */
-    const registros = [
-      { nombre: "Carlos Martínez", fecha: "2025-05-01", fichado: true },
-      { nombre: "Carlos Martínez", fecha: "2025-05-02", fichado: false },
-      { nombre: "Laura Fernández", fecha: "2025-05-01", fichado: true },
-      { nombre: "Juan García", fecha: "2025-05-03", fichado: true },
-      { nombre: "María López", fecha: "2025-05-02", fichado: false },
-      { nombre: "Miguel Torres", fecha: "2025-05-03", fichado: true },
-      { nombre: "Pedro Sánchez", fecha: "2025-05-01", fichado: true }
-    ];
+    /* ===== DATOS ===== */
+    const DATA_URL = "../data/fichajes.json";
+    const LOCAL_RRHH_KEY = "fichajes-empleados";
+    let registros = [];
 
     const tabla = document.getElementById("tablaResultados");
+
+    function nombreDesdeCorreo(correo) {
+      if (!correo) return "Empleado";
+      const base = correo.split("@")[0] || "";
+      if (!base) return "Empleado";
+      return base.charAt(0).toUpperCase() + base.slice(1);
+    }
+
+    function cargarDatosLocal() {
+      try {
+        const raw = localStorage.getItem(LOCAL_RRHH_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (error) {
+        console.warn("No se pudieron leer los datos locales:", error);
+        return {};
+      }
+    }
+
+    function mergeDatos(base, local) {
+      const merged = { empleados: {} };
+      const baseEmpleados = base && base.empleados ? base.empleados : {};
+
+      Object.keys(baseEmpleados).forEach(correo => {
+        const info = baseEmpleados[correo] || {};
+        merged.empleados[correo] = {
+          nombre: info.nombre || nombreDesdeCorreo(correo),
+          registros: { ...(info.registros || {}) }
+        };
+      });
+
+      if (local && typeof local === "object") {
+        Object.keys(local).forEach(correo => {
+          const info = local[correo] || {};
+          if (!merged.empleados[correo]) {
+            merged.empleados[correo] = {
+              nombre: info.nombre || nombreDesdeCorreo(correo),
+              registros: {}
+            };
+          }
+          const registrosBase = merged.empleados[correo].registros || {};
+          const registrosLocal = info.registros || {};
+          merged.empleados[correo].registros = { ...registrosBase, ...registrosLocal };
+          if (!merged.empleados[correo].nombre) {
+            merged.empleados[correo].nombre = info.nombre || nombreDesdeCorreo(correo);
+          }
+        });
+      }
+
+      return merged;
+    }
+
+    async function cargarDatos() {
+      let base = { empleados: {} };
+      try {
+        const resp = await fetch(DATA_URL, { cache: "no-store" });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        base = await resp.json();
+      } catch (error) {
+        console.warn("No se pudieron cargar los datos base:", error);
+      }
+      return mergeDatos(base, cargarDatosLocal());
+    }
+
+    function construirRegistros(empleados) {
+      const lista = [];
+      if (!empleados || typeof empleados !== "object") return lista;
+
+      Object.keys(empleados).forEach(correo => {
+        const info = empleados[correo] || {};
+        const nombre = info.nombre || nombreDesdeCorreo(correo);
+        const registrosEmpleado = info.registros || {};
+        Object.keys(registrosEmpleado).forEach(fecha => {
+          const registro = registrosEmpleado[fecha] || {};
+          const fichado = !!(registro.entrada && registro.entrada !== "--:--");
+          lista.push({ nombre, fecha, fichado });
+        });
+      });
+
+      return lista.sort((a, b) => a.fecha.localeCompare(b.fecha));
+    }
+
+    async function cargarRegistros() {
+      const data = await cargarDatos();
+      registros = construirRegistros(data.empleados || {});
+    }
 
     function renderTabla(data) {
       tabla.innerHTML = "";
@@ -187,7 +268,8 @@
     /* ===== GRÁFICOS ===== */
     const barChart = new Chart(document.getElementById("barChart"), {
       type: "bar",
-      data: { labels: ["Fichados", "No fichados"], datasets: [{ data: [0, 0], backgroundColor: ["#16a34a", "#dc2626"] }] }
+      data: { labels: ["Fichados", "No fichados"], datasets: [{ data: [0, 0], backgroundColor: ["#16a34a", "#dc2626"] }] },
+      options: { responsive: true, maintainAspectRatio: false }
     });
 
     const pieChart = new Chart(document.getElementById("pieChart"), {
@@ -196,7 +278,19 @@
       options: { responsive: true, maintainAspectRatio: false }
     });
 
-    aplicarFiltros();
+    async function refrescarDatos() {
+      await cargarRegistros();
+      aplicarFiltros();
+    }
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === LOCAL_RRHH_KEY) {
+        refrescarDatos();
+      }
+    });
+
+    refrescarDatos();
   </script>
 </body>
 </html>
+

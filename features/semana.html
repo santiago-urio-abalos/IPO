@@ -150,6 +150,7 @@ html.dark button {
         </div>
       </div>
       <button
+        id="btnExport"
         class="h-10 px-4 rounded-lg
               bg-dark dark:bg-gray-800
               border border-gray-200 dark:border-gray-700
@@ -258,12 +259,27 @@ html.dark button {
       }
     }
 
-    function calcularHorasDia(eventos, dateKey) {
-      if (!Array.isArray(eventos) || eventos.length === 0) return 0;
+    function formatHora(value) {
+      if (!value) return "--:--";
+      return new Date(value).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatMinutos(minutos) {
+      const horas = Math.floor(minutos / 60);
+      const mins = minutos % 60;
+      return `${pad(horas)}:${pad(mins)}`;
+    }
+
+    function calcularResumenDia(eventos, dateKey) {
+      if (!Array.isArray(eventos) || eventos.length === 0) {
+        return { entrada: "--:--", salida: "--:--", pausas: "00:00", horas: 0 };
+      }
 
       const ordenados = [...eventos].sort((a, b) => new Date(a.time) - new Date(b.time));
       const inicio = ordenados.find(ev => ev.type === 'entrada');
-      if (!inicio) return 0;
+      if (!inicio) {
+        return { entrada: "--:--", salida: "--:--", pausas: "00:00", horas: 0 };
+      }
 
       const fin = [...ordenados].reverse().find(ev => ev.type === 'salida');
       const hoyKey = toKey(new Date());
@@ -292,7 +308,19 @@ html.dark button {
 
       let totalMs = endTime - new Date(inicio.time) - pausaMs;
       if (!Number.isFinite(totalMs) || totalMs < 0) totalMs = 0;
-      return totalMs / 3600000;
+
+      const pausaMin = Math.max(0, Math.floor(pausaMs / 60000));
+
+      return {
+        entrada: formatHora(inicio.time),
+        salida: fin ? formatHora(fin.time) : "--:--",
+        pausas: formatMinutos(pausaMin),
+        horas: totalMs / 3600000
+      };
+    }
+
+    function calcularHorasDia(eventos, dateKey) {
+      return calcularResumenDia(eventos, dateKey).horas;
     }
 
     function mergeWeekFromEvents() {
@@ -386,6 +414,45 @@ html.dark button {
       renderDailyList();
     }
 
+    function buildExportText() {
+      const store = loadDailyStore();
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      const email = (localStorage.getItem("userEmail") || "usuario@click.com").toLowerCase();
+      const lines = [];
+      lines.push(`Resumen semanal ${toKey(weekStart)} - ${toKey(weekEnd)}`);
+      lines.push(`Empleado: ${email}`);
+      lines.push(`Generado: ${new Date().toLocaleString('es-ES')}`);
+      lines.push("");
+
+      weekDays.forEach(day => {
+        const key = toKey(new Date(day.date));
+        const resumen = calcularResumenDia(store[key], key);
+        lines.push(`${key} | Entrada: ${resumen.entrada} | Salida: ${resumen.salida} | Pausas: ${resumen.pausas} | Horas: ${formatHours(resumen.horas)}`);
+      });
+
+      return lines.join("\n");
+    }
+
+    function descargarTexto(contenido, nombreArchivo) {
+      const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nombreArchivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportarSemana() {
+      mergeWeekFromEvents();
+      const texto = buildExportText();
+      const nombre = `fichajes_semana_${toKey(weekStart)}.txt`;
+      descargarTexto(texto, nombre);
+    }
+
     function scheduleReset() {
       const now = new Date();
       const currentStart = startOfWeek(now);
@@ -424,6 +491,11 @@ html.dark button {
       saveWeekData(weekStart, weekDays);
       scheduleReset();
     });
+
+    const exportBtn = document.getElementById("btnExport");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", exportarSemana);
+    }
 
     const backBtn = document.getElementById("btnBack");
 
