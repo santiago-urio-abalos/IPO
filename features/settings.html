@@ -303,7 +303,7 @@
 
     onAuthStateChanged(auth, (user) => {
         if (!user) {
-            window.location.href = "../pages/index.html";
+            window.location.href = "/../index.html";
             return;
         }
         nameEl.textContent  = user.displayName || "Usuario";
@@ -312,7 +312,7 @@
 
     logoutBtn.addEventListener("click", async () => {
         await signOut(auth);
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     document.getElementById("btnBack").addEventListener("click", () => {
