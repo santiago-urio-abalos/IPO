@@ -188,9 +188,9 @@ html.dark #addEventBtn:hover {
       </div>
 
       <div class="card">
-        <h3 id="selectedLabel" class="text-lg font-semibold mb-1">D&iacute;a</h3>
+        <h3 id="selectedLabel" class="text-lg font-semibold mb-1">Día</h3>
         <p id="selectedWeekday" class="text-sm text-gray-500 mb-4">-</p>
-        <div id="eventList" class="space-y-2 text-sm text-gray-600">No hay eventos para este d&iacute;a</div>
+        <div id="eventList" class="space-y-2 text-sm text-gray-600">No hay eventos para este día</div>
         <button id="addEventBtn" class="mt-4 w-full bg-black text-white py-2 rounded-lg text-sm font-semibold hover:opacity-90">Agregar evento</button>
       </div>
     </div>
@@ -412,7 +412,7 @@ html.dark #addEventBtn:hover {
       const events = [...(pseudo[key] || []), ...(userEvents[key] || [])];
 
       if (!events.length) {
-        list.textContent = 'No hay eventos para este d&iacute;a';
+        list.textContent = 'No hay eventos para este día';
         return;
       }
 
