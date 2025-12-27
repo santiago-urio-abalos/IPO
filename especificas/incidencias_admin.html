@@ -125,17 +125,82 @@
 
 <script>
 // DATOS ORIGINALES
-const data = [
-  {email:"juan.garcia@empresa.com",type:"Olvido de fichaje",date:"2024-11-18T09:30",state:"pending",comment:"Olvidé fichar la entrada esta mañana."},
-  {email:"maria.lopez@empresa.com",type:"Error de fichaje",date:new Date().toISOString(),state:"resolved",comment:"Salida marcada como pausa."},
-  {email:"carlos.martinez@empresa.com",type:"Olvido de fichaje",date:daysAgo(2),state:"pending",comment:"App no disponible."},
-  {email:"ana.rodriguez@empresa.com",type:"Error de fichaje",date:daysAgo(5),state:"blocked",comment:"Registro duplicado."},
-  {email:"luis.perez@empresa.com",type:"Olvido de fichaje",date:daysAgo(12),state:"pending",comment:"No fichó entrada."},
-  {email:"sofia.diaz@empresa.com",type:"Error de fichaje",date:daysAgo(20),state:"resolved",comment:"Hora incorrecta."},
-  {email:"pedro.sanchez@empresa.com",type:"Olvido de fichaje",date:daysAgo(40),state:"blocked",comment:"Fuera de plazo."}
+const baseData = [
+  {email:"juan@click.com",type:"Olvido de fichaje",date:"2024-11-18T09:30",state:"pending",comment:"Olvide fichar la entrada esta manana."},
+  {email:"maria@click.com",type:"Error de fichaje",date:new Date().toISOString(),state:"resolved",comment:"Salida marcada como pausa."},
+  {email:"carlos@click.com",type:"Olvido de fichaje",date:daysAgo(2),state:"pending",comment:"App no disponible."},
+  {email:"ana@click.com",type:"Error de fichaje",date:daysAgo(5),state:"blocked",comment:"Registro duplicado."},
+  {email:"luis@click.com",type:"Olvido de fichaje",date:daysAgo(12),state:"pending",comment:"No ficho entrada."},
+  {email:"sofia@click.com",type:"Error de fichaje",date:daysAgo(20),state:"resolved",comment:"Hora incorrecta."},
+  {email:"pedro@click.com",type:"Olvido de fichaje",date:daysAgo(40),state:"blocked",comment:"Fuera de plazo."}
 ];
 
+const STORAGE_KEY = "incidencias-data";
+let data = [];
+
 function daysAgo(d){ const dt=new Date(); dt.setDate(dt.getDate()-d); return dt.toISOString(); }
+
+function mapStatusToState(status){
+  if(!status) return "pending";
+  if(status === "pending" || status === "resolved" || status === "blocked") return status;
+  if(status === "aprobada") return "resolved";
+  if(status === "rechazada") return "blocked";
+  return "pending";
+}
+
+function mapStateToStatus(state){
+  if(state === "resolved") return "aprobada";
+  if(state === "blocked") return "rechazada";
+  return "pendiente";
+}
+
+function loadLocalIncidencias(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return [];
+    const parsed = JSON.parse(raw);
+    if(!Array.isArray(parsed)) return [];
+    const emailDefault = (localStorage.getItem("userEmail") || "usuario@click.com").toLowerCase();
+    return parsed.map(item => {
+      if(!item) return null;
+      return {
+        email: (item.email || emailDefault).toLowerCase(),
+        type: item.type || "Incidencia",
+        date: item.date || new Date().toISOString(),
+        state: mapStatusToState(item.status),
+        comment: item.description || "",
+        source: "local",
+        localId: item.id
+      };
+    }).filter(Boolean);
+  }catch(error){
+    console.warn("No se pudieron cargar incidencias locales:", error);
+    return [];
+  }
+}
+
+function refreshData(){
+  data = [...baseData, ...loadLocalIncidencias()];
+}
+
+function updateLocalState(item, newState){
+  if(!item || item.source !== "local") return;
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    if(!Array.isArray(parsed)) return;
+    const idx = parsed.findIndex(i => String(i.id) === String(item.localId));
+    if(idx === -1) return;
+    parsed[idx].status = mapStateToStatus(newState);
+    if(!parsed[idx].email){
+      parsed[idx].email = item.email;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+  }catch(error){
+    console.warn("No se pudo actualizar la incidencia local:", error);
+  }
+}
 
 const container = document.getElementById("incidents");
 const cpEl = document.getElementById("cp"), crEl = document.getElementById("cr"), cbEl = document.getElementById("cb");
@@ -190,7 +255,9 @@ function openModal(idx){
 function closeModal(){ document.getElementById("modal").style.display = "none"; }
 
 function saveModal(){
-  data[current].state = document.getElementById("mState").value;
+  const newState = document.getElementById("mState").value;
+  data[current].state = newState;
+  updateLocalState(data[current], newState);
   closeModal();
   render();
 }
@@ -209,8 +276,17 @@ function applyFilters(){
 document.getElementById("stateFilter").onchange = applyFilters;
 document.getElementById("dateFilter").onchange = applyFilters;
 
+window.addEventListener("storage", (event) => {
+  if(event.key === STORAGE_KEY){
+    refreshData();
+    render();
+  }
+});
+
+refreshData();
 render();
 </script>
 <script src="../js/dark-mode.js" type="module"></script>
 </body>
 </html>
+

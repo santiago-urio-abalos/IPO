@@ -181,6 +181,10 @@
   <script>
     // ===== Variables y helpers =====
     const STORAGE_KEY='incidencias-data';
+    const USER_EMAIL=(localStorage.getItem("userEmail")||"usuario@click.com").toLowerCase();
+    if(!localStorage.getItem("userEmail")){
+      localStorage.setItem("userEmail", USER_EMAIL);
+    }
     const typeSelect=document.getElementById('typeSelect');
     const typeHead=document.getElementById('typeHead');
     const typeOptions=document.getElementById('typeOptions');
@@ -203,7 +207,7 @@
         const raw=localStorage.getItem(STORAGE_KEY);
         if(raw) return JSON.parse(raw);
       }catch(e){ console.warn(e); }
-      const sample=[{id:crypto.randomUUID?crypto.randomUUID():Date.now(),type:'Olvido de fichaje',date:new Date().toISOString(),description:'Prueba',status:'pendiente'}];
+      const sample=[{id:crypto.randomUUID?crypto.randomUUID():Date.now(),email:USER_EMAIL,type:'Olvido de fichaje',date:new Date().toISOString(),description:'Prueba',status:'pendiente'}];
       saveIncidencias(sample);
       return sample;
     }
@@ -289,7 +293,7 @@
     function saveIncidencia(){
       const type=typeSelected.textContent;
       const description=descInput.value.trim();
-      const newInc={id:crypto.randomUUID?crypto.randomUUID():Date.now(),type,date:selectedDate.toISOString(),description,status:'pendiente'};
+      const newInc={id:crypto.randomUUID?crypto.randomUUID():Date.now(),email:USER_EMAIL,type,date:selectedDate.toISOString(),description,status:'pendiente'};
       incidencias.push(newInc); saveIncidencias(incidencias); renderIncidencias(); toggleModal(false);
     }
 
