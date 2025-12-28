@@ -38,7 +38,7 @@
     .input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #E5E7EB; background:#F9FAFB; outline:none; font-size:14px; color:#1F2937; }
     .select { position:relative; }
     .select-head { border:1px solid #E5E7EB; border-radius:12px; padding:12px 14px; background:#F9FAFB; cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:14px; color:#1F2937; }
-    .select-options { position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid #E5E7EB; border-radius:12px; box-shadow:0 16px 40px rgba(0,0,0,0.12); display:none; z-index:10; color:#1F2937; }
+    .select-options { position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid #E5E7EB; border-radius:12px; box-shadow:0 16px 40px rgba(0,0,0,0.12); z-index:10; color:#1F2937; }
     .select-option { padding:12px 14px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; }
     .select-option:hover { background:#F3F4F6; }
     .calendar { user-select:none; }
@@ -136,7 +136,7 @@
               <span id="typeSelected">Olvido de fichaje</span>
               <i class="fa-solid fa-chevron-down text-gray-500"></i>
             </div>
-            <div class="select-options" id="typeOptions">
+            <div class="select-options hidden" id="typeOptions">
               <div class="select-option" data-value="Olvido de fichaje">
                 <span>Olvido de fichaje</span>
                 <i class="fa-solid fa-check text-gray-400 hidden"></i>
